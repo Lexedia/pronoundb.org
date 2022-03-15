@@ -24,23 +24,34 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 import type { FastifyInstance } from 'fastify'
+import type { ExternalAccount } from '@pronoundb/shared'
 
-import discordModule from './discord.js'
-import facebookModule from './facebook.js'
-import githubModule from './github.js'
-import twitchModule from './twitch.js'
-import twitterModule from './twitter.js'
-import redditModule from './reddit.js'
+import fetch from 'node-fetch'
+import register from './abstract/oauth2.js'
+import config from '../config.js'
+
+const [clientId, clientSecret] = config.oauth.reddit
+
+async function getSelf(token: string): Promise<ExternalAccount> {
+  const data = await fetch('https://oauth.reddit.com/api/v1/me', {
+    headers: {
+      accept: 'application/json',
+      authorization: `bearer ${token}`,
+    },
+  }).then((r) => r.json() as any)
+
+  return { id: data.id, name: data.name, platform: 'reddit' }
+}
 
 export default async function (fastify: FastifyInstance) {
-  fastify.addHook('preHandler', fastify.auth([ fastify.verifyTokenizeToken, (_, __, next) => next() ]))
-
-  fastify.register(discordModule, { prefix: '/discord' })
-  fastify.register(facebookModule, { prefix: '/facebook' })
-  fastify.register(githubModule, { prefix: '/github' })
-  fastify.register(twitchModule, { prefix: '/twitch' })
-  fastify.register(twitterModule, { prefix: '/twitter' })
-  fastify.register(redditModule, { prefix: '/reddit' })
+  register(fastify, {
+    clientId: clientId,
+    clientSecret: clientSecret,
+    platform: 'reddit',
+    authorization: 'https://www.reddit.com/api/v1/authorize',
+    token: 'https://www.reddit.com/api/v1/access_token',
+    scopes: ['identity'],
+    getSelf,
+  })
 }
