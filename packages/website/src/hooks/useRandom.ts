@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020-2022 Cynthia K. Rey, All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,11 +26,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import useRandom from './useRandom'
+import { useContext, useMemo } from 'preact/hooks'
+import AppContext from '../components/AppContext'
 
-const HEARTS = [ '❤️', '🧡', '💛', '💚', '💙', '💜', '💗', '💖', '💝' ]
+export default function useRandom (id: string, max: number) {
+  const ctxId = `random.${id}`
 
-export default function useHeart (id: string) {
-  const heart = useRandom(id, HEARTS.length)
-  return HEARTS[heart]
+  const { ctx } = useContext(AppContext)
+  return useMemo(() => {
+    if (!(ctxId in ctx)) ctx[ctxId] = Math.floor(Math.random() * max)
+    return ctx[ctxId]
+  }, [ id, max ])
 }

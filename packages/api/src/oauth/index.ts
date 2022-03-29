@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020-2022 Cynthia K. Rey, All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,6 +31,7 @@ import type { FastifyInstance } from 'fastify'
 import discordModule from './discord.js'
 import facebookModule from './facebook.js'
 import githubModule from './github.js'
+import minecraftModule from './minecraft.js'
 import twitchModule from './twitch.js'
 import twitterModule from './twitter.js'
 import redditModule from './reddit.js'
@@ -40,6 +42,7 @@ export default async function (fastify: FastifyInstance) {
   fastify.register(discordModule, { prefix: '/discord' })
   fastify.register(facebookModule, { prefix: '/facebook' })
   fastify.register(githubModule, { prefix: '/github' })
+  fastify.register(minecraftModule, { prefix: '/minecraft' })
   fastify.register(twitchModule, { prefix: '/twitch' })
   fastify.register(twitterModule, { prefix: '/twitter' })
   fastify.register(redditModule, { prefix: '/reddit' })

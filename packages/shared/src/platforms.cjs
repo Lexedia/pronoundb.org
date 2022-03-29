@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020-2022 Cynthia K. Rey, All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -59,6 +60,11 @@ const Platforms = {
     color: '#3088D4',
     since: '0.0.0',
     soon: true,
+  },
+  minecraft: {
+    name: 'Minecraft',
+    color: '#854F2B',
+    since: '0.0.0',
   },
   osu: {
     name: 'osu!',

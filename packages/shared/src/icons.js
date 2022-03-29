@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2020-2022 Cynthia K. Rey, All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -31,6 +32,7 @@ import Facebook from 'simple-icons/icons/facebook.svg'
 import GitHub from 'simple-icons/icons/github.svg'
 import Instagram from 'simple-icons/icons/instagram.svg'
 import Mastodon from 'simple-icons/icons/mastodon.svg'
+import Minecraft from '../assets/minecraft.svg'
 import Osu from 'simple-icons/icons/osu.svg'
 import Reddit from 'simple-icons/icons/reddit.svg'
 import Twitch from 'simple-icons/icons/twitch.svg'
@@ -43,6 +45,7 @@ const Icons = {
   github: GitHub,
   instagram: Instagram,
   mastodon: Mastodon,
+  minecraft: Minecraft,
   osu: Osu,
   reddit: Reddit,
   twitch: Twitch,
