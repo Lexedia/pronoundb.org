@@ -136,8 +136,11 @@ async function injectTweet (tweet: HTMLElement) {
 	} else {
 		const directId = await fetchReactProp(tweet, [ { $find: 'tweet', $in: [ 'return', 'memoizedProps' ] }, 'tweet', 'user', 'id_str' ])
 		const retweetId = await fetchReactProp(tweet, [ { $find: 'tweet', $in: [ 'return', 'memoizedProps' ] }, 'tweet', 'retweeted_status', 'user', 'id_str' ])
-		id = retweetId || directId
 
+		// Tweets can be removed and injected again, and in this case we cannot trust the data from `directId` and `retweetId`
+		if (!tweet.isConnected) return
+
+		id = retweetId || directId
 		if (username && id) usernameToIdCache[username] = id
 	}
 

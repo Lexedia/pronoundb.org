@@ -32,6 +32,8 @@ import { fetchDecoration } from '../../core/decoration'
 type Place = 'profile' | 'tweet' | 'popout' | 'other'
 
 export async function decorateAvatar (el: HTMLElement, decoration: string, place: Place = 'other') {
+	if (import.meta.env.MODE !== 'dev') return // WIP!
+
 	const d = await fetchDecoration(decoration)
 	if (!d) return
 
