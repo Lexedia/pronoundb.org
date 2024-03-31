@@ -28,7 +28,7 @@
 
 import database from './database/database.js'
 
-const CHROME = 'https://chrome.google.com/webstore/detail/nblkbiljcjfemkfjnhoobnojjgjdmknf?hl=en'
+const CHROME = 'https://chromewebstore.google.com/detail/pronoundb/nblkbiljcjfemkfjnhoobnojjgjdmknf?hl=en'
 const FIREFOX = 'https://addons.mozilla.org/api/v5/addons/addon/pronoundb'
 const EDGE = 'https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/jbgjogfdlgjohdacngknlohahhaiaodn'
 
@@ -54,9 +54,9 @@ let stats = {
 
 async function fetchChromeStats () {
 	const data = await fetch(CHROME).then((r) => r.text())
-	const version = data.match(/itemprop="version" content="([0-9.]+)/)?.[1] ?? '0.0.0'
-	const install = data.match(/itemprop="interactionCount" content="UserDownloads:([0-9,]+)/)?.[1]?.replace(/,/g, '') ?? '0'
-	const stars = Number(data.match(/class="rsw-stars".*?([0-9.]+)/)?.[1] ?? 0)
+	const version = data.match(/\\"version\\":\\"([0-9.]+)\\"/)?.[1] ?? '0.0.0'
+	const install = data.match(/>([0-9,]+) users</)?.[1]?.replace(/,/g, '') ?? '0'
+	const stars = Number(data.match(/>([0-9.]+) out of 5</)?.[1] ?? 0)
 
 	return {
 		version: version,

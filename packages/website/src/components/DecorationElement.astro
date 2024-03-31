@@ -31,7 +31,7 @@ import type { CollectionEntry } from 'astro:content'
 
 import slashSvg from 'feather-icons/dist/icons/slash.svg?raw'
 
-const DecorationElements = import.meta.glob('../assets/decorations/*.svg', { as: 'raw' })
+const DecorationElements = import.meta.glob('../assets/decorations/*.svg', { query: '?raw' })
 
 export interface Props {
 	decoration: CollectionEntry<'decorations'> | null

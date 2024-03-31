@@ -33,9 +33,6 @@ import DecorationElement from './DecorationElement.astro'
 
 import sparklesSvg from '@assets/sparkles.svg?raw'
 import checkedSvg from 'feather-icons/dist/icons/check-circle.svg?raw'
-import slashSvg from 'feather-icons/dist/icons/slash.svg?raw'
-
-const DecorationElements = import.meta.glob('../assets/decorations/*.svg', { as: 'raw' })
 
 export interface Props {
 	decoration: CollectionEntry<'decorations'> | null
@@ -45,45 +42,6 @@ export interface Props {
 
 const { decoration, selected, demo } = Astro.props
 const id = `decoration-${Math.random().toString(16).slice(2, 10)}`
-
-const topLeft = decoration?.data.elements?.top_left
-const bottomRight = decoration?.data.elements?.bottom_right
-const animationBorder = decoration?.data.animation?.border
-const animationTopLeft = decoration?.data.animation?.top_left
-const animationBottomRight = decoration?.data.animation?.bottom_right
-
-type ColorDef = { c: string, o: string }
-function definitionToColor (def: ColorDef[]) {
-	return def.map(({ c, o }) => `${c} ${o}`).join(', ')
-}
-
-function makeGradientBorder (def: string) {
-	return `border-color: transparent; background: linear-gradient(currentColor, currentColor) padding-box, ${def} border-box`
-}
-
-let style = ''
-switch (decoration?.data.border.type) {
-	case 'solid':
-		style = `border-color: ${decoration.data.border.color}`
-		break
-	case 'linear-gradient': {
-		let angle = decoration.data.border.angle
-		if (angle === -1) angle = 45
-
-		const gradient = definitionToColor(decoration.data.border.colors)
-		style = makeGradientBorder(`linear-gradient(${angle}deg, ${gradient})`)
-		break
-	}
-	case 'conic-gradient': {
-		let angle = decoration.data.border.angle
-		if (angle === -1) angle = -45
-		if (angle === -2) angle = 135
-
-		const gradient = definitionToColor(decoration.data.border.colors)
-		style = makeGradientBorder(`conic-gradient(from ${angle}deg at 50% 50%, ${gradient})`)
-		break
-	}
-}
 
 const Element = demo ? 'div' : 'label'
 ---
