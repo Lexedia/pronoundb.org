@@ -59,8 +59,8 @@ function clearProfileHeader () {
 	}
 }
 
-async function injectProfileHeader (username?: string) {
-	// Remove stale info from the profile
+async function injectProfileHeader () {
+	// Remove potential stale info from the profile
 	clearProfileHeader()
 
 	// Mark avatar as handled
@@ -68,20 +68,13 @@ async function injectProfileHeader (username?: string) {
 	if (avatar) avatar.dataset.pdbHandled = 'true'
 
 	// Process the header
-	let header: HTMLElement
-	if (username) {
-		let currentUsername
-		do {
-			// Make sure the UI updated
-			await new Promise((resolve) => setTimeout(resolve, 10))
-			header = document.querySelector<HTMLElement>('[data-testid="UserProfileHeader_Items"]')!
-			currentUsername = await fetchReactProp(header.parentElement!, [ { $find: 'user', $in: [ 'return', 'memoizedProps' ] }, 'user', 'screen_name' ])
-		} while (currentUsername !== username)
-	} else {
-		username = document.head.querySelector('meta[property="al:android:url"]')?.getAttribute('content')?.split('=')[1]
+	let header = document.querySelector<HTMLElement>('[data-testid="UserProfileHeader_Items"]')!
+	while (!header) {
+		await new Promise((resolve) => setTimeout(resolve, 10))
 		header = document.querySelector<HTMLElement>('[data-testid="UserProfileHeader_Items"]')!
 	}
 
+	const username = header?.parentElement?.parentElement?.querySelector<HTMLElement>('[data-testid="UserName"] div + div > [tabindex="-1"] span')?.innerText.slice(1)
 	let id: string
 
 	// Use a cache to avoid round-trips to the webpage context
@@ -239,13 +232,31 @@ async function injectAvatarDecoration (img: HTMLElement) {
 
 	let id: string
 	if (wrapper.tagName === 'DIV') {
-		if (!document.querySelector('header')?.contains(wrapper) && !document.querySelector('#layers')?.contains(wrapper)) return
-		if (self in usernameToIdCache) {
+		let isSelf = false, queryPath, queryId
+		if (document.querySelector('header')?.contains(wrapper)) {
+			isSelf = true
+			queryPath = [ 'return', 'memoizedProps', 'currentUser' ]
+			queryId = 'id_str'
+		}
+
+		const layers = document.querySelector('#layers')
+		if (layers?.contains(wrapper)) {
+			if (layers?.querySelector('[data-testid="tweetTextarea_0_label"]') && !wrapper.ariaHidden) {
+				isSelf = true
+				queryPath = [ 'return', 'memoizedProps', 'currentUser' ]
+				queryId = 'id_str'
+			} else {
+				queryPath = [ 'return', 'memoizedProps' ]
+				queryId = 'userId'
+			}
+		}
+
+		if (!queryPath || !queryId) return
+		if (isSelf && self in usernameToIdCache) {
 			id = usernameToIdCache[self]
 		} else {
-			// Self user account
-			id = await fetchReactProp(wrapper, [ { $find: 'id_str', $in: [ 'return', 'memoizedProps', 'currentUser', 'viewerUser' ] }, 'id_str' ])
-			if (id) usernameToIdCache[self] = id
+			id = await fetchReactProp(wrapper, [ { $find: queryId, $in: queryPath }, queryId ])
+			if (id && self) usernameToIdCache[self] = id
 		}
 	} else {
 		// Classic flow with cache possibility
@@ -272,6 +283,9 @@ async function injectAvatarDecoration (img: HTMLElement) {
 function handleLayoutRepaint () {
 	const header = document.querySelector('[data-testid="UserProfileHeader_Items"]')
 	if (header) injectProfileHeader()
+
+	const composeAvatar = document.querySelector<HTMLElement>('div:has(> [role="progressbar"]):has([data-testid="createPollButton"]) img')
+	if (composeAvatar) injectAvatarDecoration(composeAvatar)
 }
 
 function handleMutation (nodes: MutationRecord[]) {
@@ -280,27 +294,15 @@ function handleMutation (nodes: MutationRecord[]) {
 
 	for (const { addedNodes } of nodes) {
 		for (const added of addedNodes) {
-			if (added instanceof HTMLElement) {
+			if (added instanceof HTMLElement && added.tagName !== 'SCRIPT') {
 				if (added.parentElement?.parentElement?.tagName === 'MAIN') {
 					handleLayoutRepaint()
-				}
-
-				if (
-					added.tagName === 'META'
-					&& added.getAttribute('property') === 'al:android:url'
-					&& added.getAttribute('content')?.startsWith('twitter://user?')
-				) {
-					injectProfileHeader(added.getAttribute('content')?.split('=')[1])
 					continue
 				}
 
-				if (
-					added.tagName === 'LINK'
-					&& added.getAttribute('rel') === 'canonical'
-					&& document.head.querySelector('meta[property="al:android:url"]')?.getAttribute('content')?.startsWith('twitter://user?')
-				) {
-					if (document.querySelector('[data-testid="UserProfileHeader_Items"] [data-pronoundb]')) continue
-					injectProfileHeader(added.getAttribute('content')?.split('=')[1])
+				// This is not foolproof and may fail to catch some cases, but I don't have anything better at the time
+				if (added.children[0]?.getAttribute('data-testid') === 'UserDescription') {
+					injectProfileHeader()
 					continue
 				}
 
@@ -320,8 +322,11 @@ function handleMutation (nodes: MutationRecord[]) {
 
 				// Decorations
 				if (added.tagName === 'IMG' && added.getAttribute('src')?.includes('/profile_images/')) {
-					injectAvatarDecoration(added)
-					continue
+					const src = added.getAttribute('src')
+					if (src && src.includes('/profile_images/') && !src.includes('_mini.')) {
+						injectAvatarDecoration(added)
+						continue
+					}
 				}
 
 				if (added.children[0]?.children[0]?.role === 'progressbar' && added.querySelector('[data-testid="createPollButton"]')) {
@@ -332,8 +337,16 @@ function handleMutation (nodes: MutationRecord[]) {
 
 				if (layers.contains(added)) {
 					const link = added.querySelector('a[href*="/following"]')
-					if (link) injectProfilePopOut(link.parentElement!.parentElement!.parentElement!.parentElement!)
-					continue
+					if (link) {
+						injectProfilePopOut(link.parentElement!.parentElement!.parentElement!.parentElement!)
+						continue
+					}
+
+					if (added.children[0]?.getAttribute('data-testid') === 'twc-cc-mask') {
+						const img = added.querySelector<HTMLElement>('img')
+						if (img) injectAvatarDecoration(img)
+						continue
+					}
 				}
 			}
 		}
