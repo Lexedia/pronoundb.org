@@ -99,7 +99,7 @@ async function handleUserPopOut (node: HTMLElement) {
 		h('div', { style: Styles.text }, formatPronouns(pronouns.sets.en))
 	)
 
-	const sinceBlock = node.querySelector<HTMLElement>('[class^="memberSinceContainer"]')?.previousElementSibling?.parentElement
+	const sinceBlock = node.querySelector<HTMLElement>('[class^="memberSinceContainer_"]')?.previousElementSibling?.parentElement
 	if (!sinceBlock) return
 
 	sinceBlock.parentElement?.insertBefore(pronounsSection, sinceBlock)
@@ -118,7 +118,7 @@ async function handleUserModal (node: HTMLElement) {
 	const pronouns = await fetchPronouns('discord', id)
 	if (!pronouns || !pronouns.sets.en) return
 
-	const container = node.querySelector<HTMLElement>('[class^="userInfoSection"]')
+	const container = node.querySelector<HTMLElement>('[class^="userInfoSection_"]')
 	if (!container) return
 
 	const frag = document.createDocumentFragment()
@@ -127,7 +127,7 @@ async function handleUserModal (node: HTMLElement) {
 
 	container.classList.add('has-pronouns')
 
-	const sinceHeader = node.querySelector<HTMLElement>('[class^="memberSinceContainer"]')?.previousElementSibling
+	const sinceHeader = node.querySelector<HTMLElement>('[class^="memberSinceContainer_"]')?.previousElementSibling
 	if (!sinceHeader) return
 
 	container.insertBefore(frag, sinceHeader)
@@ -135,14 +135,13 @@ async function handleUserModal (node: HTMLElement) {
 
 async function handleAutocompleteRow (row: HTMLElement) {
 	if (row.querySelector('.pronoundb-autocomplete-pronouns')) return
-
 	const id = await fetchReactProp(row, [ 'return', 'return', 'return', 'return', 'key' ])
 	if (!id) return
 
 	const pronouns = await fetchPronouns('discord', id)
 	if (!pronouns || !pronouns.sets.en) return
 
-	const tag = row.querySelector('[class*="autocompleteRowContentSecondary-"]')
+	const tag = row.querySelector('[class*="autocompleteRowContentSecondary_"]')
 	if (!tag) return
 
 	const element = document.createElement('span')
@@ -155,12 +154,13 @@ function handleMutation (mutations: MutationRecord[]) {
 	for (const { addedNodes } of mutations) {
 		for (const node of addedNodes) {
 			if (node instanceof HTMLElement) {
+				console.log(node)
 				if (node.id.startsWith('chat-messages-')) {
 					handleMessage(node)
 					continue
 				}
 
-				if (node.className.startsWith('chat-') || node.className.startsWith('chatContent-')) {
+				if (node.className.startsWith('chat_') || node.className.startsWith('chatContent_')) {
 					node.querySelectorAll<HTMLElement>('li[id^=chat-messages-]').forEach((m) => handleMessage(m))
 					continue
 				}
@@ -170,7 +170,7 @@ function handleMutation (mutations: MutationRecord[]) {
 					continue
 				}
 
-				if (node.querySelector('div[class^="userInfoSection-"]')) {
+				if (node.querySelector('div[class^="memberSinceContainer_"]')) {
 					if (node.querySelector('[aria-modal="true"]')) {
 						handleUserModal(node)
 						continue
@@ -181,13 +181,13 @@ function handleMutation (mutations: MutationRecord[]) {
 					continue
 				}
 
-				if (node.className.startsWith('autocomplete-')) {
-					const rows = Array.from(node.querySelectorAll('[class*="autocompleteRow-"]')) as HTMLElement[]
+				if (node.className.startsWith('autocomplete_')) {
+					const rows = Array.from(node.querySelectorAll('[class*="autocompleteRow_"]')) as HTMLElement[]
 					rows.filter((row) => row?.querySelector('[role="img"]')).forEach((row) => handleAutocompleteRow(row))
 					continue
 				}
 
-				if (node.className.startsWith('autocompleteRow-') && node.querySelector('[role="img"]')) {
+				if (node.className.startsWith('autocompleteRow_') && node.querySelector('[role="img"]')) {
 					handleAutocompleteRow(node)
 					continue
 				}
