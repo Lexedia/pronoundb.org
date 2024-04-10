@@ -300,8 +300,10 @@ function handleMutation (nodes: MutationRecord[]) {
 					continue
 				}
 
-				// This is not foolproof and may fail to catch some cases, but I don't have anything better at the time
-				if (added.children[0]?.getAttribute('data-testid') === 'UserDescription') {
+				if (
+					added.children[0]?.getAttribute('data-testid') === 'UserDescription' ||
+					added.children[0]?.children[0]?.querySelector('[data-testid="UserProfileHeader_Items"]')
+				) {
 					injectProfileHeader()
 					continue
 				}
@@ -321,7 +323,7 @@ function handleMutation (nodes: MutationRecord[]) {
 				}
 
 				// Decorations
-				if (added.tagName === 'IMG' && added.getAttribute('src')?.includes('/profile_images/')) {
+				if (added.tagName === 'IMG') {
 					const src = added.getAttribute('src')
 					if (src && src.includes('/profile_images/') && !src.includes('_mini.')) {
 						injectAvatarDecoration(added)

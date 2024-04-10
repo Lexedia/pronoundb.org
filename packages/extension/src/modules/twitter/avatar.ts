@@ -43,6 +43,7 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 
 	const hasBorder = place === 'profile'
 	const isBig = place === 'profile'
+	console.log(place)
 	const smallerDecoration = place === 'profile' || place === 'popout'
 
 	el.classList.add('pronoundb-decorated', `pronoundb-decorated-${place}`)
@@ -122,6 +123,7 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 			{
 				class: 'pronoundb-decoration pronoundb-decoration-top-left',
 				style: css({
+					display: 'flex',
 					position: 'absolute',
 					transform: 'translate(-50%, -50%)',
 					width: smallerDecoration ? '35%' : '50%',
@@ -145,6 +147,7 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 			{
 				class: 'pronoundb-decoration pronoundb-decoration-bottom-right',
 				style: css({
+					display: 'flex',
 					position: 'absolute',
 					transform: 'translate(50%, 50%)',
 					width: smallerDecoration ? '35%' : '50%',
