@@ -43,7 +43,6 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 
 	const hasBorder = place === 'profile'
 	const isBig = place === 'profile'
-	console.log(place)
 	const smallerDecoration = place === 'profile' || place === 'popout'
 
 	el.classList.add('pronoundb-decorated', `pronoundb-decorated-${place}`)

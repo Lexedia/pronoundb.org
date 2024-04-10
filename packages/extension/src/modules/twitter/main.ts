@@ -38,7 +38,7 @@ import { decorateAvatar, clearAvatar } from './avatar'
 // Never change this to X
 export const name = 'Twitter'
 export const color = '#1DA1F2'
-export const match = /^https:\/\/(.+\.)?twitter\.com/
+export const match = /^https:\/\/(.+\.)?(twitter|x)\.com/
 export { default as Icon } from '../../../assets/twitter.svg'
 
 import stylesheet from './style.css?raw'
@@ -54,7 +54,7 @@ function clearProfileHeader () {
 
 	const avatarContainer = document.querySelector<HTMLElement>('[data-testid="primaryColumn"] [data-testid^="UserAvatar-Container"]')
 	if (avatarContainer?.hasAttribute('style') === false) {
-		const decorated = avatarContainer.querySelector<HTMLElement>('.pronoundb-decorated')
+		const decorated = avatarContainer.querySelector<HTMLElement>('.pronoundb-decoration-wrapper a')
 		if (decorated) clearAvatar(decorated)
 	}
 }
@@ -295,6 +295,7 @@ function handleMutation (nodes: MutationRecord[]) {
 	for (const { addedNodes } of nodes) {
 		for (const added of addedNodes) {
 			if (added instanceof HTMLElement && added.tagName !== 'SCRIPT') {
+				// console.log(added)
 				if (added.parentElement?.parentElement?.tagName === 'MAIN') {
 					handleLayoutRepaint()
 					continue
