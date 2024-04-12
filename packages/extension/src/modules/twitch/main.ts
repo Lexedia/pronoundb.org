@@ -42,9 +42,11 @@ export const match = /^https:\/\/(.+\.)?twitch\.tv/
 export { default as Icon } from 'simple-icons/icons/twitch.svg'
 
 import stylesheet from './style.css?raw'
-const styleElement = document.createElement('style')
-styleElement.appendChild(document.createTextNode(stylesheet))
-document.head.appendChild(styleElement)
+function setupStylesheet() {
+	const styleElement = document.createElement('style')
+	styleElement.appendChild(document.createTextNode(stylesheet))
+	document.head.appendChild(styleElement)
+}
 
 const settings = {
 	chat: true,
@@ -365,6 +367,7 @@ function handleMutation (nodes: MutationRecord[]) {
 
 export function inject () {
 	// todo: load settings
+	setupStylesheet()
 
 	const navbar = document.querySelector<HTMLElement>('[data-a-target="top-nav-container"]')!
 	if (navbar) {

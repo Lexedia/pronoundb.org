@@ -37,7 +37,9 @@ export default function transform (): Plugin {
 		// Remove references to innerHTML
 		transform: (code) =>
 			!isDev && code.includes('dangerouslySetInnerHTML')
-				? code.replace(/;[^;]+innerHTML.*?}/, '}')
+				? code
+					.replace(/\|\|\w\.__html===\w\.innerHTML\)\|\|\(\w\.innerHTML=\w\.__html/, '')
+					.replace(/&&\(\w\.innerHTML=""\)/, '')
 				: void 0,
 
 		// Replace references to __BUILD_CHUNK__ to actual assets

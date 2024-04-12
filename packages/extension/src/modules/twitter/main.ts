@@ -42,9 +42,11 @@ export const match = /^https:\/\/(.+\.)?(twitter|x)\.com/
 export { default as Icon } from '../../../assets/twitter.svg'
 
 import stylesheet from './style.css?raw'
-const styleElement = document.createElement('style')
-styleElement.appendChild(document.createTextNode(stylesheet))
-document.head.appendChild(styleElement)
+function setupStylesheet () {
+	const styleElement = document.createElement('style')
+	styleElement.appendChild(document.createTextNode(stylesheet))
+	document.head.appendChild(styleElement)
+}
 
 const self = Symbol('username.self')
 const usernameToIdCache = Object.create(null)
@@ -357,6 +359,7 @@ function handleMutation (nodes: MutationRecord[]) {
 }
 
 export function inject () {
+	setupStylesheet()
 	handleLayoutRepaint()
 
 	const observer = new MutationObserver(handleMutation)
