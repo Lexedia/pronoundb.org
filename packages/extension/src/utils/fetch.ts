@@ -62,8 +62,7 @@ async function doFetch (platform: string, queue: Map<string, Deferred<UserData |
 	// Request is done by the background worker to avoid CSP issues.
 	// Chromium does let us do the request regardless of the page's CSP, but Firefox doesn't.
 	const res = await chrome.runtime.sendMessage({
-		kind: 'http',
-		target: 'lookup',
+		kind: 'pronouns',
 		platform: platform,
 		ids: Array.from(queue.keys()),
 	})

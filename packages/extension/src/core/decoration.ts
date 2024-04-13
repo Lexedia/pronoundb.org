@@ -99,21 +99,29 @@ function renderSvg (data: any) {
 }
 
 async function doFetch (id: string): Promise<DecorationData | null> {
-	const res = await fetch(`https://pronoundb.org/decorations/${id}.json`)
-	if (res.status !== 200) return null
+	// Request is done by the background worker to avoid CSP issues.
+	// Chromium does let us do the request regardless of the page's CSP, but Firefox doesn't.
+	const res = await chrome.runtime.sendMessage({
+		kind: 'decoration',
+		decoration: id,
+	})
 
-	const data = await res.json()
+	if (!res.success) {
+		console.error('[PronounDB::fetch] Failed to fetch:', res.error)
+		return null
+	}
+
 	return {
-		name: data.name,
-		border: (el: Element) => getBorderColor(data.border, el.clientWidth, el.clientHeight),
+		name: res.data.name,
+		border: (el: Element) => getBorderColor(res.data.border, el.clientWidth, el.clientHeight),
 		elements: {
-			topLeft: data.elements?.top_left && renderSvg(data.elements.top_left),
-			bottomRight: data.elements?.bottom_right && renderSvg(data.elements.bottom_right),
+			topLeft: res.data.elements?.top_left && renderSvg(res.data.elements.top_left),
+			bottomRight: res.data.elements?.bottom_right && renderSvg(res.data.elements.bottom_right),
 		},
 		animation: {
-			border: data.animation?.border,
-			topLeft: data.animation?.top_left,
-			bottomRight: data.animation?.bottom_right,
+			border: res.data.animation?.border,
+			topLeft: res.data.animation?.top_left,
+			bottomRight: res.data.animation?.bottom_right,
 		},
 	}
 }

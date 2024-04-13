@@ -44,11 +44,20 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 // HTTP HANDLER
 chrome.runtime.onMessage.addListener((request, _, cb) => {
-	if (request.kind === 'http') {
+	if (request.kind === 'pronouns') {
 		fetch(Endpoints.LOOKUP(request.platform, request.ids), { headers: { 'x-pronoundb-source': `WebExtension/${import.meta.env.PDB_EXT_VERSION}` } })
 			.then((r) => r.json())
 			.then((d) => cb({ success: true, data: d }))
-			.catch((e) => cb({ success: false, error: e }))
+			.catch((e) => cb({ success: false, error: e.toString() }))
+
+		return true
+	}
+
+	if (request.kind === 'decoration') {
+		fetch(`https://pronoundb.org/decorations/${request.decoration}.json`)
+			.then((r) => r.status !== 200 ? null : r.json())
+			.then((d) => cb({ success: true, data: d }))
+			.catch((e) => cb({ success: false, error: e.toString() }))
 
 		return true
 	}

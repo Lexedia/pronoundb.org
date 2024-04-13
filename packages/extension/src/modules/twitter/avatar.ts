@@ -64,7 +64,7 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 
 	// Transform the outline into a ring
 	const outlineWrapper = el.firstElementChild! as HTMLElement
-	const wrapperStyles = outlineWrapper.computedStyleMap()
+	const wrapperStyles = window.getComputedStyle(outlineWrapper)
 	const background = document.body.style.backgroundColor || 'white'
 
 	outlineWrapper.classList.add('pronoundb-border')
@@ -72,7 +72,7 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 	outlineWrapper.style.width = isBig ? 'calc(100% + 12px)' : 'calc(100% + 4px)'
 	outlineWrapper.style.height = isBig ? 'calc(100% + 12px)' : 'calc(100% + 4px)'
 
-	const clipPath = wrapperStyles.get('clip-path')?.toString() ?? 'none'
+	const clipPath = wrapperStyles.clipPath?.toString() ?? 'none'
 
 	let offset = '0'
 	if (clipPath.includes('-square')) offset = '-18%'
@@ -93,8 +93,8 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 					left: hasBorder ? '4px' : '0',
 					right: hasBorder ? '4px' : '0',
 					bottom: hasBorder ? '4px' : '0',
-					borderRadius: wrapperStyles.get('border-radius')?.toString() ?? '50%',
-					clipPath: wrapperStyles.get('clip-path')?.toString() ?? 'none',
+					borderRadius: wrapperStyles.borderRadius?.toString() ?? '50%',
+					clipPath: wrapperStyles.clipPath?.toString() ?? 'none',
 				}),
 			},
 			h('div', {
