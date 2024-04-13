@@ -11,6 +11,6 @@
 	},
 	"animation": {
 		"top_left": "rotate",
-		"bottom_right": "rotate"
+		"bottom_right": "rotate-counter"
 	}
 }

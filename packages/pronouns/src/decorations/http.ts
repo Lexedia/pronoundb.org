@@ -26,17 +26,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import '@types/chrome'
+export type DecorationBorderSolid = { type: 'solid', color: string }
 
-declare global {
-	const cloneInto: (object: any, ctx: any, opts?: any) => void
+export type DecorationBorderGradient = {
+	type: 'linear-gradient' | 'conic-gradient'
+	angle: number
+	colors: Array<{ c: string, o: string }>
+}
 
-	interface Window {
-		wrappedJSObject: this
-		__BUILD_CHUNK__: Record<string, string>
+export type DecorationBorder =
+	| DecorationBorderSolid
+	| DecorationBorderGradient
+
+export type SvgElement =
+	| { /* svg path */ t: 'p', /* color */ c: string, /* definition */ d: string }
+	| { /* svg group */ t: 'g', e: SvgElement[] }
+
+export type SvgDefinition = {
+	v: string // view-box
+	p: SvgElement[] // elements
+}
+
+export type DecorationDataSvgV1 = {
+	version: 1
+	name: string
+	border: DecorationBorder
+	elements?: {
+		top_left?: SvgDefinition
+		bottom_right?: SvgDefinition
 	}
-
-	interface Element {
-		wrappedJSObject: this
+	animation?: {
+		border?: string
+		top_left?: string
+		bottom_right?: string
 	}
+}
+
+export type DecorationData =
+	| DecorationDataSvgV1
+
+export async function fetchDecoration (d: string): Promise<DecorationData | null> {
+	const res = await fetch(`https://pronoundb.org/decorations/${d}.json`)
+	if (res.status !== 200) return null
+
+	return await res.json() as DecorationData | null
 }

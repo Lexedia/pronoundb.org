@@ -1,3 +1,4 @@
+---
 /*
  * Copyright (c) Cynthia Rey et al., All rights reserved.
  * SPDX-License-Identifier: BSD-3-Clause
@@ -26,17 +27,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import '@types/chrome'
+import { type SvgElement } from '@pronoundb/pronouns/decorations'
 
-declare global {
-	const cloneInto: (object: any, ctx: any, opts?: any) => void
-
-	interface Window {
-		wrappedJSObject: this
-		__BUILD_CHUNK__: Record<string, string>
+export interface Props { elements: SvgElement[] }
+const { elements } = Astro.props
+---
+{elements.map((el) => {
+	switch (el.t) {
+		case 'p':
+			return <path fill={el.c} d={el.d}/>
+		case 'g':
+			return <g><Astro.self elements={el.e}/></g>
 	}
-
-	interface Element {
-		wrappedJSObject: this
-	}
-}
+})}

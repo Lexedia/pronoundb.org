@@ -27,6 +27,10 @@
 			"import": "./dist/formatter.js",
 			"types": "./dist/formatter.d.ts"
 		},
+		"./decorations": {
+			"import": "./dist/decorations/index.js",
+			"types": "./dist/decorations/index.d.ts"
+		},
 		"./legacy": {
 			"import": "./dist/legacy.js",
 			"types": "./dist/legacy.d.ts"

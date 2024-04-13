@@ -28,83 +28,60 @@
  */
 
 import type { CollectionEntry } from 'astro:content'
+import { type DecorationData, type Decoration, renderDecoration } from '@pronoundb/pronouns/decorations'
+import DecorationSvg from './DecorationSvg.astro'
 
 import slashSvg from 'feather-icons/dist/icons/slash.svg?raw'
 
-const DecorationElements = import.meta.glob('../assets/decorations/*.svg', { query: '?raw' })
+type DecorationMaybeString = Omit<Decoration, 'elements'> & {
+	elements: {
+		topLeft: Decoration['elements']['topLeft'] | string
+		bottomRight: Decoration['elements']['bottomRight'] | string
+	}
+}
 
 export interface Props {
 	decoration: CollectionEntry<'decorations'> | null
 	background?: string
 }
 
-const { decoration, background } = Astro.props
+const { decoration: decorationRaw, background } = Astro.props
 
-const topLeft = decoration?.data.elements?.top_left
-const bottomRight = decoration?.data.elements?.bottom_right
-const animationBorder = decoration?.data.animation?.border
-const animationTopLeft = decoration?.data.animation?.top_left
-const animationBottomRight = decoration?.data.animation?.bottom_right
-
-type ColorDef = { c: string, o: string }
-function definitionToColor (def: ColorDef[]) {
-	return def.map(({ c, o }) => `${c} ${o}`).join(', ')
-}
-
-function makeStyle (def: string) {
-	const bg = background ?? 'linear-gradient(currentColor, currentColor)'
-	return `border-color: transparent; background: ${bg} padding-box, ${def} border-box; background-size: contain`
-}
-
-let style = ''
-switch (decoration?.data.border.type) {
-	case 'solid':
-		style = makeStyle(decoration.data.border.color)
-		break
-	case 'linear-gradient': {
-		let angle = decoration.data.border.angle
-		if (angle === -1) angle = 45
-
-		const gradient = definitionToColor(decoration.data.border.colors)
-		style = makeStyle(`linear-gradient(${angle}deg, ${gradient})`)
-		break
-	}
-	case 'conic-gradient': {
-		let angle = decoration.data.border.angle
-		if (angle === -1) angle = -45
-		if (angle === -2) angle = 135
-
-		const gradient = definitionToColor(decoration.data.border.colors)
-		style = makeStyle(`conic-gradient(from ${angle}deg at 50% 50%, ${gradient})`)
-		break
-	}
-}
+const bg = background ?? 'linear-gradient(currentColor, currentColor)'
+const decoration = decorationRaw
+	? renderDecoration(decorationRaw.data as DecorationData) as DecorationMaybeString | null
+	: null
 ---
 <div class='relative w-full h-full'>
 	{decoration
 		? (
 			<Fragment>
 				<div
-					class:list={[ 'w-full h-full border-8 rounded-full decoration-border', animationBorder && `animation-${animationBorder}` ]}
-					style={style}
+					class:list={[
+						'w-full h-full border-8 rounded-full decoration-border',
+						decoration.animation.border && `animation-${decoration.animation.border}`
+					]}
+					style={`border-color: transparent; background: ${bg} padding-box, ${decoration.border.color} border-box; background-size: contain`}
 				/>
-				{topLeft && (
+				{decoration.elements.topLeft && (
 					<div
 						class:list={[
 							'w-10 absolute top-[15%] left-[15%] absolute -translate-x-1/2 -translate-y-1/2 element-top',
-							animationTopLeft && `animation-${animationTopLeft}`
+							decoration.animation.topLeft && `animation-${decoration.animation.topLeft}`
 						]}
-						set:html={DecorationElements[`../assets/decorations/${topLeft}`]()}
-					/>
+					>
+						<DecorationSvg element={decoration.elements.topLeft}/>
+					</div>
 				)}
-				{bottomRight && (
+				{decoration.elements.bottomRight && (
 					<div
 						class:list={[
 							'w-10 absolute bottom-[15%] right-[15%] absolute translate-x-1/2 translate-y-1/2 element-bottom',
-							animationBottomRight && `animation-${animationBottomRight}`
+							decoration.animation.bottomRight && `animation-${decoration.animation.bottomRight}`
 						]}
-						set:html={DecorationElements[`../assets/decorations/${bottomRight}`]()}
-					/>
+					>
+						<DecorationSvg element={decoration.elements.bottomRight}/>
+					</div>
 				)}
 			</Fragment>
 		)
@@ -122,5 +99,17 @@ switch (decoration?.data.border.type) {
 	@keyframes rotate {
 		from { transform: rotate(0); }
 		to { transform: rotate(360deg); }
+	}
+
+	.decoration-border.animation-rotate-counter,
+	.element-top.animation-rotate-counter :global(svg),
+	.element-bottom.animation-rotate-counter :global(svg) {
+		border-color: transparent;
+		animation: rotate-counter 7s linear infinite;
+	}
+
+	@keyframes rotate-counter {
+		from { transform: rotate(0); }
+		to { transform: rotate(-360deg); }
 	}
 </style>

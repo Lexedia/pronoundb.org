@@ -31,7 +31,7 @@ import type { CollectionEntry } from 'astro:content'
 import { getCollection } from 'astro:content'
 import Decoration from './Decoration.astro'
 
-type Deco = CollectionEntry<'decorations'>['data']
+type Deco = CollectionEntry<'decorations'>
 
 export interface Props {
 	selected: string | null
