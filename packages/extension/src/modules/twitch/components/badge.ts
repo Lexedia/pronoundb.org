@@ -27,9 +27,9 @@
  */
 
 import type { UserData } from '@pronoundb/pronouns/sets'
-import { h, css } from '../../../utils/dom'
+import { getDecorationExtension } from '@pronoundb/pronouns/decorations'
+import { h, css, svg } from '../../../utils/dom'
 import { formatPronounsShort } from '../../../utils/pronouns'
-import { fetchDecoration } from '../../../core/decoration'
 
 const BADGE_WRAPPER = css({
 	display: 'inline-flex',
@@ -113,10 +113,10 @@ export default function badge (data: UserData) {
 	)
 
 	if (data.decoration) {
-		fetchDecoration(data.decoration).then((d) => {
+		getDecorationExtension(data.decoration).then((d) => {
 			if (!d) return
 
-			const border = d.border(el)
+			const border = d.border.renderer(el.clientWidth, el.clientHeight)
 			const borderElement = h(
 				'div',
 				{ class: 'pronoundb-chat-badge-border-wrapper', style: BADGE_BORDER_WRAPPER },
@@ -142,7 +142,7 @@ export default function badge (data: UserData) {
 				const deco = h(
 					'div',
 					{ class: 'pronoundb-decoration-top-left-container', style: BADGE_DECORATION_1 },
-					d.elements.topLeft.cloneNode(true)
+					svg(d.elements.topLeft)
 				)
 
 				el.appendChild(deco)
@@ -155,7 +155,7 @@ export default function badge (data: UserData) {
 				const deco = h(
 					'div',
 					{ class: 'pronoundb-decoration-bottom-right-container', style: BADGE_DECORATION_2 },
-					d.elements.bottomRight.cloneNode(true)
+					svg(d.elements.bottomRight)
 				)
 
 				el.appendChild(deco)

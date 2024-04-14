@@ -11,8 +11,10 @@
 		"build": "tsc",
 		"lint": "eslint --ext ts src"
 	},
+	"dependencies": {
+		"@types/chrome": "^0.0.266"
+	},
 	"devDependencies": {
-		"@types/node": "^20.11.30",
 		"@typescript-eslint/eslint-plugin": "^7.4.0",
 		"@typescript-eslint/parser": "^7.4.0",
 		"eslint": "^8.57.0",
@@ -30,6 +32,10 @@
 		"./decorations": {
 			"import": "./dist/decorations/index.js",
 			"types": "./dist/decorations/index.d.ts"
+		},
+		"./ext": {
+			"import": "./dist/ext.js",
+			"types": "./dist/ext.d.ts"
 		},
 		"./legacy": {
 			"import": "./dist/legacy.js",

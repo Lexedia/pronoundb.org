@@ -26,4 +26,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// TODO: migrate legacy `fetch.ts` here
+import { fetchDecoration } from './decorations/http.js'
+
+export function setupExtensionWorker () {
+	chrome.runtime.onMessage.addListener((request, _, cb) => {
+		if (request.kind === 'decoration') {
+			fetchDecoration(request.decoration)
+				.then((d) => cb({ success: true, data: d }))
+				.catch((e) => cb({ success: false, error: e.message }))
+
+			return true
+		}
+	})
+}

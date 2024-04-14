@@ -26,12 +26,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { Endpoints, WEBSITE } from './constants.js'
+import { setupExtensionWorker } from '@pronoundb/pronouns/ext'
+import { Endpoints } from './constants.js'
 
 // ONBOARDING & CHANGE LOGS
 chrome.runtime.onInstalled.addListener((details) => {
 	if (details.reason === 'install') {
-		chrome.tabs.create({ url: `${WEBSITE}/onboarding` })
+		chrome.tabs.create({ url: 'https://pronoundb.org/onboarding' })
 	}
 
 	if (details.reason === 'update') {
@@ -43,19 +44,11 @@ chrome.runtime.onInstalled.addListener((details) => {
 })
 
 // HTTP HANDLER
+setupExtensionWorker()
 chrome.runtime.onMessage.addListener((request, _, cb) => {
 	if (request.kind === 'pronouns') {
 		fetch(Endpoints.LOOKUP(request.platform, request.ids), { headers: { 'x-pronoundb-source': `WebExtension/${import.meta.env.PDB_EXT_VERSION}` } })
 			.then((r) => r.json())
-			.then((d) => cb({ success: true, data: d }))
-			.catch((e) => cb({ success: false, error: e.toString() }))
-
-		return true
-	}
-
-	if (request.kind === 'decoration') {
-		fetch(`https://pronoundb.org/decorations/${request.decoration}.json`)
-			.then((r) => r.status !== 200 ? null : r.json())
 			.then((d) => cb({ success: true, data: d }))
 			.catch((e) => cb({ success: false, error: e.toString() }))
 

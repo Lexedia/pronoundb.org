@@ -26,8 +26,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import type { SvgDefinition, SvgElement } from '@pronoundb/pronouns/decorations'
+
+export type Child = Node | string | null | false
+export type Children = Child | Children[]
+
 const SVG = [ 'svg', 'symbol', 'path', 'g' ]
-export function h (tag: string, props: Record<string, any> | null, ...child: Array<Node | string | null | false>): HTMLElement | SVGElement {
+function processChildren (children: Children[]): Node[] {
+	const res = []
+	for (const child of children) {
+		if (!child) continue;
+
+		if (Array.isArray(child)) {
+			res.push(...processChildren(child))
+		} else {
+			res.push(typeof child === 'string' ? document.createTextNode(child) : child)
+		}
+	}
+
+	return res
+}
+
+export function h (tag: string, props: Record<string, any> | null, ...children: Children[]): HTMLElement | SVGElement {
 	const e = SVG.includes(tag)
 		? document.createElementNS('http://www.w3.org/2000/svg', tag)
 		: document.createElement(tag)
@@ -45,11 +65,7 @@ export function h (tag: string, props: Record<string, any> | null, ...child: Arr
 		}
 	}
 
-	for (const c of child) {
-		if (!c) continue
-		e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c)
-	}
-
+	processChildren(children).forEach((n) => e.appendChild(n))
 	return e
 }
 
@@ -61,4 +77,24 @@ export function css (style: Record<string, string>): string {
 		}
 	}
 	return res
+}
+
+function svgGroup (elements: SvgElement[]): Children[] {
+	return elements.map((el) => {
+		switch (el.t) {
+			case 'p':
+			case void 0:
+				return h('path', { fill: el.c, d: el.d })
+			case 'g':
+				return h('g', null, svgGroup(el.e))
+		}
+	})
+}
+
+export function svg (def: SvgDefinition): SVGSVGElement {
+	return <SVGSVGElement> h(
+		'svg',
+		{ viewBox: def.v },
+		svgGroup(def.p)
+	)
 }

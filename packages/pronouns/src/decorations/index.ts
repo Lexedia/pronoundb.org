@@ -107,9 +107,15 @@ export function renderDecoration (decoration: DecorationData): Decoration | null
 
 export async function getDecoration (decoration: string): Promise<Decoration | null> {
 	const data = await fetchDecoration(decoration)
-	if (!data) return null
+	return data ? renderDecoration(data) : null
+}
 
-	return renderDecoration(data)
+export async function getDecorationExtension (decoration: string): Promise<Decoration | null> {
+	const res = await chrome.runtime.sendMessage({ kind: 'decoration', decoration: decoration })
+	if (!res.success) throw new Error(res.error)
+
+	const data = res.data as DecorationData | null
+	return data ? renderDecoration(data) : null
 }
 
 export {

@@ -74,6 +74,9 @@ async function doFetch (platform: string, queue: Map<string, Deferred<UserData |
 	}
 
 	for (const [ k, deferred ] of queue.entries()) {
+		if (res.data[k]) {
+			res.data[k].decoration = 'cogs'
+		}
 		deferred.resolve(cleanPayload(res.data[k]))
 	}
 }

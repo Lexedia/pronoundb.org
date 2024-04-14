@@ -26,15 +26,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { h, css } from '../../utils/dom'
-import { fetchDecoration } from '../../core/decoration'
+import { getDecorationExtension } from '@pronoundb/pronouns/decorations'
+import { h, css, svg } from '../../utils/dom'
 
 type Place = 'profile' | 'tweet' | 'popout' | 'other'
 
 export async function decorateAvatar (el: HTMLElement, decoration: string, place: Place = 'other') {
 	if (import.meta.env.MODE !== 'dev') return // WIP!
 
-	const d = await fetchDecoration(decoration)
+	const d = await getDecorationExtension(decoration)
 	if (!d) return
 
 	if (el.classList.contains('pronoundb-decorated')) {
@@ -78,7 +78,7 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 	if (clipPath.includes('-square')) offset = '-18%'
 	else if (clipPath.includes('-hex')) offset = '-4%'
 
-	let position = '15%'
+	let position = smallerDecoration ? '14%' : '12%'
 	if (clipPath.includes('-square')) position = '4%'
 
 	outlineWrapper.appendChild(
@@ -100,7 +100,7 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 			h('div', {
 				class: 'pronoundb-border-inner',
 				style: css({
-					background: d.border(parent),
+					background: d.border.color,
 					position: 'absolute',
 					top: offset,
 					left: offset,
@@ -131,10 +131,10 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 					color: background,
 				}),
 			},
-			d.elements.topLeft.cloneNode(true)
+			svg(d.elements.topLeft)
 		)
-		el.appendChild(deco)
 
+		el.appendChild(deco)
 		if (d.animation.topLeft) {
 			deco.classList.add(`pronoundb-animate-${d.animation.topLeft}`)
 		}
@@ -155,10 +155,10 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 					color: background,
 				}),
 			},
-			d.elements.bottomRight.cloneNode(true)
+			svg(d.elements.bottomRight)
 		)
-		el.appendChild(deco)
 
+		el.appendChild(deco)
 		if (d.animation.bottomRight) {
 			deco.classList.add(`pronoundb-animate-${d.animation.bottomRight}`)
 		}
