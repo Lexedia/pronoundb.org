@@ -51,7 +51,13 @@ export default function transform (): Plugin {
 					if (chunk.type === 'chunk') {
 						chunk.code = chunk.code.replace(
 							/window\.__BUILD_CHUNK__\.([a-z]+)/g,
-							(_, chk) => JSON.stringify(chunks.find((c) => c.name === chk)?.fileName)
+							(_, chk) => JSON.stringify(chunks.find((c) => c.name === chk)?.fileName),
+						)
+
+						chunk.code = chunk.code.replace(
+							/window\.__BUILD_STYLESHEET__\.([a-z]+)/g,
+							// @ts-expect-error
+							(_, chk) => JSON.stringify(chunks.find((c) => c.name === `styles/${chk}`)?.viteMetadata?.importedCss.values().next().value),
 						)
 					}
 				}

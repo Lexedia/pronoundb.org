@@ -85,7 +85,7 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 		h(
 			'div',
 			{
-				class: 'pronoundb-border-inner-wrapper',
+				class: 'pronoundb-decoration-border-wrapper',
 				style: css({
 					overflow: 'hidden',
 					position: 'absolute',
@@ -98,7 +98,7 @@ export async function decorateAvatar (el: HTMLElement, decoration: string, place
 				}),
 			},
 			h('div', {
-				class: 'pronoundb-border-inner',
+				class: 'pronoundb-decoration-border',
 				style: css({
 					background: d.border.color,
 					position: 'absolute',

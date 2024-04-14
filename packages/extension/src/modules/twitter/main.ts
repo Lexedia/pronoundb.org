@@ -41,11 +41,15 @@ export const color = '#1DA1F2'
 export const match = /^https:\/\/(.+\.)?(twitter|x)\.com/
 export { default as Icon } from '../../../assets/twitter.svg'
 
-import stylesheet from './style.css?raw'
-function setupStylesheet () {
-	const styleElement = document.createElement('style')
-	styleElement.appendChild(document.createTextNode(stylesheet))
-	document.head.appendChild(styleElement)
+function setupStylesheet() {
+	const stylePdblib = document.createElement('link')
+	const styleTwitter = document.createElement('link')
+	stylePdblib.setAttribute('rel', 'stylesheet')
+	styleTwitter.setAttribute('rel', 'stylesheet')
+	stylePdblib.setAttribute('href', chrome.runtime.getURL(window.__BUILD_STYLESHEET__.pdblib))
+	styleTwitter.setAttribute('href', chrome.runtime.getURL(window.__BUILD_STYLESHEET__.twitter))
+	document.head.appendChild(stylePdblib)
+	document.head.appendChild(styleTwitter)
 }
 
 const self = Symbol('username.self')

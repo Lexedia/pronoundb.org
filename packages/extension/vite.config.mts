@@ -28,7 +28,8 @@
 
 import type { Plugin } from 'vite'
 import { join } from 'path'
-import { rm, rename } from 'fs/promises'
+import { existsSync } from 'fs'
+import { rm, rename, readdir } from 'fs/promises'
 import { defineConfig } from 'vite'
 import preact from '@preact/preset-vite'
 import magicalSvg from 'vite-plugin-magical-svg'
@@ -71,6 +72,13 @@ const input: Record<string, string> = {
 	runtime: join(__dirname, 'src', 'runtime.ts'),
 	worker: join(__dirname, 'src', 'worker.ts'),
 	popup: join(__dirname, 'src', 'popup', 'index.html'),
+	'styles/pdblib': join(__dirname, '..', 'pronouns', 'styles.css')
+}
+
+const modulesDir = join(__dirname, 'src', 'modules')
+for (const dir of await readdir(modulesDir)) {
+	const stylesheet = join(modulesDir, dir, 'style.css')
+	if (existsSync(stylesheet)) input[`styles/${dir}`] = stylesheet
 }
 
 if (process.env.PDB_BROWSER_TARGET === 'firefox') {

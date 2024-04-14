@@ -95,7 +95,16 @@ export default function manifest (): Plugin {
 				// Firefox doesn't, and doesn't allow MV3 extensions to load WAR in the popup page
 				// https://twitter.com/cyyynthia_/status/1546237262014324736
 				web_accessible_resources: [
-					{ resources: [ chunks.extension.name, ...chunks.extension.imports ], matches: [ '*://*/*' ] }
+					{
+						resources: [
+							chunks.extension.name,
+							...chunks.extension.imports,
+							...Object.keys(chunks)
+								.filter((k) => k.startsWith('styles/') && k.endsWith('.css'))
+								.map((k) => chunks[k].name)
+						],
+						matches: [ '*://*/*' ]
+					}
 				],
 
 				browser_specific_settings: process.env.PDB_BROWSER_TARGET === 'firefox'

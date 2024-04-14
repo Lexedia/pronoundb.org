@@ -26,12 +26,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@keyframes pdb-animation-rotate {
+.pronoundb-animate-rotate :is(svg, .pronoundb-decoration-border) {
+	animation: __pdblib-animation-rotate 7s linear infinite;
+}
+
+.pronoundb-animate-rotate-inverse :is(svg, .pronoundb-decoration-border) {
+	animation: __pdblib-animation-rotate-inverse 7s linear infinite;
+}
+
+@keyframes __pdblib-animation-rotate {
 	from { transform: rotate(0) }
 	to { transform: rotate(360deg) }
 }
 
-.pronoundb-decoration-animation-rotate .pronoundb-chat-badge-border,
-.pronoundb-decoration-animation-rotate svg {
-	animation: pdb-animation-rotate 7s linear infinite;
+@keyframes __pdblib-animation-rotate-inverse {
+	from { transform: rotate(0) }
+	to { transform: rotate(-360deg) }
 }

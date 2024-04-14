@@ -34,6 +34,7 @@ declare global {
 	interface Window {
 		wrappedJSObject: this
 		__BUILD_CHUNK__: Record<string, string>
+		__BUILD_STYLESHEET__: Record<string, string>
 	}
 
 	interface Element {

@@ -52,7 +52,7 @@ const TP_LICENSES = [
 ]
 
 export function renderLicense (deps: Dependency[]) {
-	let str = 'Licenses for open-source software used in this extension are reproduced below.\n=========================\n\n'
+	let str = 'Licenses for open-source software used in this extension are reproduced below\n=============================================================================\n\n'
 	for (const dep of deps) {
 		const home = dep.homepage || typeof dep.repository === 'string' ? dep.repository : dep.repository?.url
 		if (!dep.licenseText) {
@@ -68,7 +68,7 @@ export function renderLicense (deps: Dependency[]) {
 	}
 
 	// Create hash
-	str += 'Meow~'
+	str += 'Meow~\n'
 	const hash = createHash('sha256').update(str).digest('hex').slice(0, 8)
 	finalLicensePath = join('assets', `third-party-licenses.${hash}.txt`)
 

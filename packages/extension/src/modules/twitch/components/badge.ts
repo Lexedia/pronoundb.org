@@ -28,8 +28,8 @@
 
 import type { UserData } from '@pronoundb/pronouns/sets'
 import { getDecorationExtension } from '@pronoundb/pronouns/decorations'
-import { h, css, svg } from '../../../utils/dom'
 import { formatPronounsShort } from '../../../utils/pronouns'
+import { h, css, svg } from '../../../utils/dom'
 
 const BADGE_WRAPPER = css({
 	display: 'inline-flex',
@@ -125,7 +125,7 @@ export default function badge (data: UserData) {
 					{ class: 'pronoundb-chat-badge-border-container', style: BADGE_BORDER_CONTAINER },
 					h(
 						'div',
-						{ class: 'pronoundb-chat-badge-border', style: `${BADGE_BORDER_ELEMENT}background:${border}` }
+						{ class: 'pronoundb-decoration-border', style: `${BADGE_BORDER_ELEMENT}background:${border}` }
 					)
 				)
 			)
@@ -135,7 +135,7 @@ export default function badge (data: UserData) {
 			wrapper.prepend(borderElement)
 
 			if (d.animation.border) {
-				borderElement.classList.add(`pronoundb-decoration-animation-${d.animation.border}`)
+				borderElement.classList.add(`pronoundb-animate-${d.animation.border}`)
 			}
 
 			if (d.elements.topLeft) {
@@ -147,7 +147,7 @@ export default function badge (data: UserData) {
 
 				el.appendChild(deco)
 				if (d.animation.topLeft) {
-					deco.classList.add(`pronoundb-decoration-animation-${d.animation.topLeft}`)
+					deco.classList.add(`pronoundb-animate-${d.animation.topLeft}`)
 				}
 			}
 
@@ -160,7 +160,7 @@ export default function badge (data: UserData) {
 
 				el.appendChild(deco)
 				if (d.animation.bottomRight) {
-					deco.classList.add(`pronoundb-decoration-animation-${d.animation.bottomRight}`)
+					deco.classList.add(`pronoundb-animate-${d.animation.bottomRight}`)
 				}
 			}
 		})

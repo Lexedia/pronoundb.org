@@ -37,6 +37,10 @@
 			"import": "./dist/ext.js",
 			"types": "./dist/ext.d.ts"
 		},
+		"./styles.css": {
+			"import": "./styles.css",
+			"require": "./styles.css"
+		},
 		"./legacy": {
 			"import": "./dist/legacy.js",
 			"types": "./dist/legacy.d.ts"

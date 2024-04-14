@@ -26,16 +26,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@keyframes pdb-animation-rotate {
-	from { transform: rotate(0) }
-	to { transform: rotate(360deg) }
-}
-
-.pronoundb-decoration.pronoundb-animate-rotate svg,
-.pronoundb-border.pronoundb-animate-rotate .pronoundb-border-inner {
-	animation: pdb-animation-rotate 7s linear infinite;
-}
-
 .pronoundb-decoration path[fill='currentColor'] {
 	transform: scale(0.92);
 	transform-origin: center;
