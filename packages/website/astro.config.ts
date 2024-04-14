@@ -42,6 +42,9 @@ export default defineConfig({
 	integrations: [ tailwind() ],
 	adapter: node({ mode: 'standalone' }),
 	vite: {
+		ssr: {
+			noExternal: [ '@pronoundb/pronouns/styles.css' ]
+		},
 		build: {
 			// I don't like inlined assets
 			assetsInlineLimit: 0,

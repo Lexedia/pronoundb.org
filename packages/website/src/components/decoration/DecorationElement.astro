@@ -32,6 +32,7 @@ import { type DecorationData, type Decoration, renderDecoration } from '@pronoun
 import DecorationSvg from './DecorationSvg.astro'
 
 import slashSvg from 'feather-icons/dist/icons/slash.svg?raw'
+import '@pronoundb/pronouns/styles.css'
 
 type DecorationMaybeString = Omit<Decoration, 'elements'> & {
 	elements: {
@@ -52,22 +53,26 @@ const decoration = decorationRaw
 	? renderDecoration(decorationRaw.data as DecorationData) as DecorationMaybeString | null
 	: null
 ---
-<div class='relative w-full h-full'>
+<div class="relative w-full h-full">
 	{decoration
 		? (
 			<Fragment>
 				<div
 					class:list={[
-						'w-full h-full border-8 rounded-full decoration-border',
-						decoration.animation.border && `animation-${decoration.animation.border}`
+						'w-full h-full',
+						decoration.animation.border && `pronoundb-animate-${decoration.animation.border}`,
 					]}
-					style={`border-color: transparent; background: ${bg} padding-box, ${decoration.border.color} border-box; background-size: contain`}
-				/>
+				>
+					<div
+						class="w-full h-full border-8 rounded-full pronoundb-decoration-border"
+						style={`border-color: transparent; background: ${bg} padding-box, ${decoration.border.color} border-box; background-size: contain`}
+					/>
+				</div>
 				{decoration.elements.topLeft && (
 					<div
 						class:list={[
 							'w-10 absolute top-[15%] left-[15%] absolute -translate-x-1/2 -translate-y-1/2 element-top',
-							decoration.animation.topLeft && `animation-${decoration.animation.topLeft}`
+							decoration.animation.topLeft && `pronoundb-animate-${decoration.animation.topLeft}`,
 						]}
 					>
 						<DecorationSvg element={decoration.elements.topLeft}/>
@@ -77,7 +82,7 @@ const decoration = decorationRaw
 					<div
 						class:list={[
 							'w-10 absolute bottom-[15%] right-[15%] absolute translate-x-1/2 translate-y-1/2 element-bottom',
-							decoration.animation.bottomRight && `animation-${decoration.animation.bottomRight}`
+							decoration.animation.bottomRight && `pronoundb-animate-${decoration.animation.bottomRight}`,
 						]}
 					>
 						<DecorationSvg element={decoration.elements.bottomRight}/>
@@ -85,31 +90,6 @@ const decoration = decorationRaw
 				)}
 			</Fragment>
 		)
-		: <div class='text-black dark:text-white' set:html={slashSvg}/>}
+		:
+		<div class="text-black dark:text-white" set:html={slashSvg}/>}
 </div>
-
-<style>
-	.decoration-border.animation-rotate,
-	.element-top.animation-rotate :global(svg),
-	.element-bottom.animation-rotate :global(svg) {
-		border-color: transparent;
-		animation: rotate 7s linear infinite;
-	}
-
-	@keyframes rotate {
-		from { transform: rotate(0); }
-		to { transform: rotate(360deg); }
-	}
-
-	.decoration-border.animation-rotate-counter,
-	.element-top.animation-rotate-counter :global(svg),
-	.element-bottom.animation-rotate-counter :global(svg) {
-		border-color: transparent;
-		animation: rotate-counter 7s linear infinite;
-	}
-
-	@keyframes rotate-counter {
-		from { transform: rotate(0); }
-		to { transform: rotate(-360deg); }
-	}
-</style>
