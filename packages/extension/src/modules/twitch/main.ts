@@ -178,7 +178,7 @@ async function injectWhisperHeader (header: HTMLElement) {
 	if (!pronouns || !pronouns.sets.en) return
 
 	const badge = badgeComponent(pronouns)
-	badge.setAttribute('style', css({ position: 'absolute', top: '50%', transform: 'translateY(-50%)' }))
+	badge.setAttribute('style', css({ position: 'absolute', top: '50%', transform: 'translateY(-50%)', color: badge.style.color }))
 
 	const username = header.querySelector('span')
 	username!.parentElement!.appendChild(
@@ -219,6 +219,30 @@ async function injectViewerCard (element: HTMLElement) {
 			)
 		)
 	)
+}
+
+async function injectStreamerHeader (header: HTMLElement) {
+	let container: HTMLElement | SVGElement | null = header.parentElement
+	if (!container) return
+
+	const streamerId = await fetchReactProp(header, [ { $find: 'channelID', $in: [ 'return', 'memoizedProps' ] }, 'channelID' ])
+	if (!streamerId) return
+
+	const pronouns = await fetchPronouns('twitch', streamerId)
+	if (!pronouns || !pronouns.sets.en) return
+
+	const badge = badgeComponent(pronouns)
+	badge.style.marginRight = '0'
+	badge.style.marginLeft = '1rem'
+
+	if (window.getComputedStyle(container).display !== 'flex') {
+		container.removeChild(header)
+		container.prepend(container = h('div', { style: css({ display: 'flex', alignItems: 'center' }) }, header))
+	} else {
+		badge.style.bottom = ''
+	}
+
+	container.appendChild(badge)
 }
 
 async function injectStreamerAbout () {
@@ -270,7 +294,7 @@ function bind7tvCompat () {
 
 	// Send inject request
 	const send = () => window.postMessage({ source: 'pronoundb', payload: { action: 'ttv.inject-chat' } })
-	const interval = setInterval(send, 1e3)
+	const interval = setInterval(send, 5e3)
 	send()
 
 	// Await for the acknowledgement of injection
@@ -291,7 +315,7 @@ function bind7tvCompat () {
 function handleMutation (nodes: MutationRecord[]) {
 	for (const { addedNodes } of nodes) {
 		for (const added of addedNodes) {
-			if (added instanceof HTMLElement) {
+			if (added instanceof HTMLElement && added.tagName !== 'BR' && added.tagName !== 'LINK' && added.tagName !== 'SCRIPT') {
 				if (settings.chat) {
 					const displayName = added.querySelector<HTMLElement>('.chat-author__display-name')
 					// Chat message
@@ -303,6 +327,13 @@ function handleMutation (nodes: MutationRecord[]) {
 					// Thread view
 					if (added.children?.item(1)?.classList.contains('chat-replies-list__container')) {
 						added.querySelectorAll<HTMLElement>('.chat-author__display-name').forEach((el) => injectChat(el))
+						continue
+					}
+
+					// Big channel info
+					if (added.querySelector('[data-target="channel-header-right"]')) {
+						const streamerTitle = added.querySelector<HTMLElement>('a:has(.tw-title)')
+						if (streamerTitle) injectStreamerHeader(streamerTitle)
 						continue
 					}
 
@@ -381,6 +412,9 @@ export function inject () {
 	// Process all existing elements
 	document.querySelectorAll<HTMLElement>('.chat-author__display-name').forEach((el) => injectChat(el))
 	if (document.querySelector('.about-section')) injectStreamerAbout()
+
+	const existingStreamerTitle = document.querySelector<HTMLElement>('.home-header-sticky:has([data-target="channel-header-right"]) a:has(.tw-title)')
+	if (existingStreamerTitle) injectStreamerHeader(existingStreamerTitle)
 
 	// Inject 7tv compat code
 	window.addEventListener('message', handle7tvMessage)

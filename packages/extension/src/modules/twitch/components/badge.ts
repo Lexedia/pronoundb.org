@@ -37,6 +37,7 @@ const BADGE_WRAPPER = css({
 	color: 'var(--color-background-base)',
 	marginRight: '4px',
 	bottom: '-1px',
+	textDecoration: 'none',
 })
 
 const BADGE = css({
@@ -67,10 +68,10 @@ const BADGE_BORDER_WRAPPER = css({
 
 const BADGE_BORDER_CONTAINER = css({
 	position: 'absolute',
-	width: '100%',
-	top: '50%',
-	left: '50%',
-	transform: 'translate(-50%, -50%)',
+	width: 'calc(100% + 4px)',
+	top: '-2px',
+	left: '-2px',
+	transform: 'translateY(-25%)',
 })
 
 const BADGE_BORDER_ELEMENT = css({
