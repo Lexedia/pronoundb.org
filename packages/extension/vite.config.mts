@@ -27,42 +27,43 @@
  */
 
 import type { Plugin } from 'vite'
+import { defineConfig } from 'vite'
 import { join } from 'path'
 import { existsSync } from 'fs'
-import { rm, rename, readdir } from 'fs/promises'
-import { defineConfig } from 'vite'
+import { readdir } from 'fs/promises'
 import preact from '@preact/preset-vite'
 import magicalSvg from 'vite-plugin-magical-svg'
 import licensePlugin from 'rollup-plugin-license'
 
-import { baseLicensePath, renderLicense, finishLicense } from './build/license'
+import { baseLicensePath, finishLicense, renderLicense } from './build/license'
 import transform from './build/transform'
 import manifest from './build/manifest'
 import pack from './build/pack'
 
 function finalizeBuild (): Plugin {
-	let outDir = ''
 	return {
+		enforce: 'post',
 		name: 'finalize-build',
-		configResolved: (cfg) => void (outDir = cfg.build.outDir),
-		writeBundle: async function () {
-			// Move html files
-			const dist = join(__dirname, outDir)
-			const distSrc = join(dist, 'src')
-
-			const popup = join(distSrc, 'popup', 'index.html')
-			const popupOut = join(dist, 'popup.html')
-
-			const background = join(distSrc, 'background.html')
-			const backgroundOut = join(dist, 'background.html')
-
-			await rename(popup, popupOut).catch(() => void 0)
-			if (process.env.PDB_BROWSER_TARGET === 'firefox') {
-				await rename(background, backgroundOut).catch(() => void 0)
-			}
-
-			await rm(distSrc, { recursive: true }).catch(() => void 0)
+		generateBundle: function (_opts, bundle) {
+			bundle['src/popup/index.html'].fileName = 'popup.html'
+			if (bundle['src/background.html']) bundle['src/background.html'].fileName = 'background.html'
 		},
+	}
+}
+
+function tweakConfig (): Plugin {
+	return {
+		name: 'pdb-config-tweak',
+		config: (cfg) => {
+			if (cfg.build?.watch) {
+				if (!cfg.build.rollupOptions) cfg.build.rollupOptions = {}
+				cfg.build.rollupOptions.output = {
+					entryFileNames: 'assets/[name].js',
+					chunkFileNames: 'assets/[name].chk.js',
+					assetFileNames: 'assets/[name].[ext]',
+				}
+			}
+		}
 	}
 }
 
@@ -72,7 +73,7 @@ const input: Record<string, string> = {
 	runtime: join(__dirname, 'src', 'runtime.ts'),
 	worker: join(__dirname, 'src', 'worker.ts'),
 	popup: join(__dirname, 'src', 'popup', 'index.html'),
-	'styles/pdblib': join(__dirname, '..', 'pronouns', 'styles.css')
+	'styles/pdblib': join(__dirname, '..', 'pronouns', 'styles.css'),
 }
 
 const modulesDir = join(__dirname, 'src', 'modules')
@@ -115,6 +116,7 @@ export default defineConfig({
 		}),
 		finishLicense(),
 		finalizeBuild(),
+		tweakConfig(),
 		manifest(),
 		pack(),
 	],

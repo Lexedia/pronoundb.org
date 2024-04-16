@@ -91,9 +91,6 @@ export default function manifest (): Plugin {
 					},
 				],
 
-				// Chrome requires resources to be WAR when using imports in content scripts
-				// Firefox doesn't, and doesn't allow MV3 extensions to load WAR in the popup page
-				// https://twitter.com/cyyynthia_/status/1546237262014324736
 				web_accessible_resources: [
 					{
 						resources: [

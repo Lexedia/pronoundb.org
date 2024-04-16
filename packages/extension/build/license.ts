@@ -36,6 +36,8 @@ import { join } from 'path'
 let finalLicensePath = ''
 export let baseLicensePath = join('assets', 'third-party-licenses.txt')
 
+const LICENSE = join(__dirname, '..', '..', '..', 'LICENSE')
+
 const TP_LICENSES = [
 	{
 		target: 'js-lru (https://github.com/rsms/js-lru)',
@@ -52,13 +54,16 @@ const TP_LICENSES = [
 ]
 
 export function renderLicense (deps: Dependency[]) {
-	let str = 'Licenses for open-source software used in this extension are reproduced below\n=============================================================================\n\n'
-	for (const dep of deps) {
-		const home = dep.homepage || typeof dep.repository === 'string' ? dep.repository : dep.repository?.url
-		if (!dep.licenseText) {
-			throw new Error(`No license text found for ${dep.name}.`)
-		}
+	let str = readFileSync(LICENSE, 'utf8').trim() + '\n\n'
+	str += '======================================================================================================\n'
+	str += 'This software includes third-party components licensed under different terms.\n'
+	str += 'Below is a list of third-party components included in the software and their respective license terms.\n'
+	str += '======================================================================================================\n\n'
 
+	for (const dep of deps) {
+		if (!dep.licenseText) throw new Error(`No license text found for ${dep.name}.`)
+
+		const home = dep.homepage || (typeof dep.repository === 'string' ? dep.repository : dep.repository?.url)
 		str += `${dep.name}${home ? ` (${home})` : ''}\nThis software is licensed under the following terms:\n\n${dep.licenseText.trim()}\n\n----------\n\n`
 	}
 
@@ -70,49 +75,44 @@ export function renderLicense (deps: Dependency[]) {
 	// Create hash
 	str += 'Meow~\n'
 	const hash = createHash('sha256').update(str).digest('hex').slice(0, 8)
-	finalLicensePath = join('assets', `third-party-licenses.${hash}.txt`)
+	finalLicensePath = join('assets', `license.${hash}.txt`)
 
 	return str
 }
 
 export function finishLicense (): Plugin {
 	let skip = false
-	let outDir = ''
 
 	return {
+		enforce: 'post',
 		name: 'finish-license',
 		configResolved: (cfg) => {
 			skip = !cfg.isProduction
-			outDir = cfg.build.outDir
-			baseLicensePath = join(outDir, baseLicensePath)
+			baseLicensePath = join(cfg.build.outDir, baseLicensePath)
 		},
-		generateBundle: (_, bundle) => {
-			const header = [
-				'Copyright (c) Cynthia Rey et al., All Rights Reserved.',
-				'Licensed under the BSD-3-Clause license. Contains third-party software licensed under different terms.',
-				`For third-party software licenses included in this build, please see /${finalLicensePath}`,
-			]
+		generateBundle: (_opts, bundle) => {
+			if (skip) return
 
+			const message = `Copyright (c) Cynthia Rey et al. - Please refer to /${finalLicensePath} for the applicable license terms`
 			for (const item of Object.values(bundle)) {
 				if (item.type === 'chunk') {
-					item.code = `/*!\n * ${header.join('\n * ')}\n */\n${item.code}`
+					item.code = `/*! ${message} */\n${item.code}`
 					continue
 				}
 
 				if (item.fileName.endsWith('.svg')) {
-					item.source = `<!--\n  ${header.join('\n  ')}\n-->\n${item.source}`
+					item.source = `<!-- ${message} -->\n${item.source}`
 					continue
 				}
 
 				if (item.fileName.endsWith('.css')) {
-					item.source = `/*!\n * ${header.join('\n * ')}\n */\n${item.source}`
+					item.source = `/*! ${message} */\n${item.source}`
 					continue
 				}
 			}
 		},
-		closeBundle: () => {
-			if (skip) return
-			return rename(baseLicensePath, join(__dirname, '..', outDir, finalLicensePath)).catch(() => void 0)
+		writeBundle: (opts) => {
+			return rename(baseLicensePath, join(opts.dir!, finalLicensePath))
 		},
 	}
 }

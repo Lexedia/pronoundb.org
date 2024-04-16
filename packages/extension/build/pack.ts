@@ -28,7 +28,7 @@
 
 import type { Plugin } from 'vite'
 import { join, relative } from 'path'
-import { existsSync, createWriteStream } from 'fs'
+import { createWriteStream } from 'fs'
 import { readdir, stat } from 'fs/promises'
 import archiver from 'archiver'
 
@@ -50,30 +50,24 @@ async function* readdirRecursive (path: string, base = path): AsyncGenerator<Fil
 
 export default function pack (): Plugin {
 	let skip = false
-	let outDir = ''
 
 	return {
+		enforce: 'post',
 		name: 'pdb-ext-pack',
-		configResolved: (cfg) => {
-			skip = !cfg.isProduction
-			outDir = cfg.build.outDir
-		},
-		closeBundle: async () => {
+		configResolved: (cfg) => void (skip = !cfg.isProduction),
+		writeBundle: async (opts) => {
 			if (skip) return
 
-			const distDir = join(__dirname, '..', outDir)
-			if (!existsSync(distDir)) return
-
 			const archive = archiver('zip', { zlib: { level: 9 } })
-			archive.pipe(createWriteStream(`${distDir}.zip`))
+			archive.pipe(createWriteStream(`${opts.dir}.zip`))
 
-			for await (const file of readdirRecursive(distDir)) archive.file(file.path, { name: file.name })
+			for await (const file of readdirRecursive(opts.dir!)) archive.file(file.path, { name: file.name })
 			await archive.finalize()
 
 			if (process.env.PDB_BROWSER_TARGET === 'firefox') {
 				// Prepare a source file archive, required by MAO review policies
 				const srcArchive = archiver('zip', { zlib: { level: 9 } })
-				srcArchive.pipe(createWriteStream(join(distDir, '..', 'source.zip')))
+				srcArchive.pipe(createWriteStream(join(opts.dir!, '..', 'source.zip')))
 
 				// Add individual base source files
 				const baseDir = join(__dirname, '..')
@@ -85,7 +79,7 @@ export default function pack (): Plugin {
 				srcArchive.file(join(rootDir, '.eslintrc.json'), { name: '.eslintrc.json' })
 
 				// Add necessary packages
-				for (const pkg of [ 'extension' ]) {
+				for (const pkg of [ 'extension', 'pronouns' ]) {
 					for await (const file of readdirRecursive(join(rootDir, 'packages', pkg))) {
 						srcArchive.file(file.path, { name: `packages/${pkg}/${file.name}` })
 					}
