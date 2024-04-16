@@ -53,7 +53,6 @@ export const LegacyPronouns: Record<string, string | string[]> = {
 	avoid: 'Avoid pronouns, use my name',
 }
 
-
 export function transformSetsToIdentifier (sets: Sets | null | undefined) {
 	if (!sets || !sets[0]) {
 		return 'unspecified'

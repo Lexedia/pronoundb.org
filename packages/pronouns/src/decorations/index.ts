@@ -105,17 +105,29 @@ export function renderDecoration (decoration: DecorationData): Decoration | null
 	}
 }
 
-export async function getDecoration (decoration: string): Promise<Decoration | null> {
-	const data = await fetchDecoration(decoration)
-	return data ? renderDecoration(data) : null
+const BADGES_CACHE = /* @__PURE__ */ new Map<string, Decoration | null>()
+
+export async function getDecoration (decorationId: string): Promise<Decoration | null> {
+	let decoration = BADGES_CACHE.get(decorationId)
+	if (decoration === void 0) {
+		const data = await fetchDecoration(decorationId)
+		BADGES_CACHE.set(decorationId, decoration = (data ? renderDecoration(data) : null))
+	}
+
+	return decoration
 }
 
-export async function getDecorationExtension (decoration: string): Promise<Decoration | null> {
-	const res = await chrome.runtime.sendMessage({ kind: 'decoration', decoration: decoration })
-	if (!res.success) throw new Error(res.error)
+export async function getDecorationExtension (decorationId: string): Promise<Decoration | null> {
+	let decoration = BADGES_CACHE.get(decorationId)
+	if (decoration === void 0) {
+		const res = await chrome.runtime.sendMessage({ kind: 'decoration', decoration: decorationId })
+		if (!res.success) throw new Error(res.error)
 
-	const data = res.data as DecorationData | null
-	return data ? renderDecoration(data) : null
+		const data = res.data as DecorationData | null
+		BADGES_CACHE.set(decorationId, decoration = (data ? renderDecoration(data) : null))
+	}
+
+	return decoration
 }
 
 export {
