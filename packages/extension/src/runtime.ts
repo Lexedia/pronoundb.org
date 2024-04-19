@@ -28,7 +28,8 @@
 
 import { createDeferred } from './utils/deferred'
 import { fetchPropUnchecked, fetchReactProp } from './utils/proxy'
-const injectModules = import.meta.glob<{ default: Function }>('./modules/**/inject.ts', { eager: true })
+
+const injectModules = import.meta.glob<Function>('./modules/**/inject.ts', { eager: true, import: 'default' })
 
 type QueryElement = string | { $find: string, $in: string[] }
 
@@ -100,11 +101,11 @@ export function initializeRuntime () {
 }
 
 if (import.meta.env.PDB_BROWSER_TARGET !== 'chrome') {
-	for (const { default: mdl } of Object.values(injectModules)) mdl()
+	for (const mdl of Object.values(injectModules)) mdl()
 }
 
 if (import.meta.env.PDB_BROWSER_TARGET === 'chrome' && !('extension' in chrome)) {
-	for (const { default: mdl } of Object.values(injectModules)) mdl()
+	for (const mdl of Object.values(injectModules)) mdl()
 
 	window.addEventListener('message', (e) => {
 		if (e.source === window && e.data?.source === 'pronoundb') {

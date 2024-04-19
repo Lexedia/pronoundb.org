@@ -111,7 +111,7 @@ export async function getDecoration (decorationId: string): Promise<Decoration |
 	let decoration = BADGES_CACHE.get(decorationId)
 	if (decoration === void 0) {
 		const data = await fetchDecoration(decorationId)
-		BADGES_CACHE.set(decorationId, decoration = (data ? renderDecoration(data) : null))
+		BADGES_CACHE.set(decorationId, decoration = data ? renderDecoration(data) : null)
 	}
 
 	return decoration
@@ -124,7 +124,7 @@ export async function getDecorationExtension (decorationId: string): Promise<Dec
 		if (!res.success) throw new Error(res.error)
 
 		const data = res.data as DecorationData | null
-		BADGES_CACHE.set(decorationId, decoration = (data ? renderDecoration(data) : null))
+		BADGES_CACHE.set(decorationId, decoration = data ? renderDecoration(data) : null)
 	}
 
 	return decoration

@@ -32,19 +32,15 @@ export type Child = Node | string | null | false
 export type Children = Child | Children[]
 
 const SVG = [ 'svg', 'symbol', 'path', 'g' ]
-function processChildren (children: Children[]): Node[] {
-	const res = []
-	for (const child of children) {
-		if (!child) continue;
 
+function processChildren (children: Children[], e: Element) {
+	for (const child of children) {
 		if (Array.isArray(child)) {
-			res.push(...processChildren(child))
-		} else {
-			res.push(typeof child === 'string' ? document.createTextNode(child) : child)
+			processChildren(child, e)
+		} else if (child) {
+			e.appendChild(typeof child === 'string' ? document.createTextNode(child) : child)
 		}
 	}
-
-	return res
 }
 
 export function h (tag: string, props: Record<string, any> | null, ...children: Children[]): HTMLElement | SVGElement {
@@ -65,7 +61,7 @@ export function h (tag: string, props: Record<string, any> | null, ...children: 
 		}
 	}
 
-	processChildren(children).forEach((n) => e.appendChild(n))
+	processChildren(children, e)
 	return e
 }
 
@@ -76,6 +72,7 @@ export function css (style: Record<string, string>): string {
 			res += `${prop.replace(/[A-Z]/g, (s) => `-${s.toLowerCase()}`)}:${style[prop]};`
 		}
 	}
+
 	return res
 }
 
@@ -83,7 +80,7 @@ function svgGroup (elements: SvgElement[]): Children[] {
 	return elements.map((el) => {
 		switch (el.t) {
 			case 'p':
-			case void 0:
+			case void 0: // Compat with legacy decoration data
 				return h('path', { fill: el.c, d: el.d })
 			case 'g':
 				return h('g', null, svgGroup(el.e))
@@ -92,9 +89,5 @@ function svgGroup (elements: SvgElement[]): Children[] {
 }
 
 export function svg (def: SvgDefinition): SVGSVGElement {
-	return <SVGSVGElement> h(
-		'svg',
-		{ viewBox: def.v },
-		svgGroup(def.p)
-	)
+	return <SVGSVGElement> h('svg', { viewBox: def.v }, svgGroup(def.p))
 }

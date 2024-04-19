@@ -35,7 +35,6 @@ export type ExtensionModule = {
 	match: RegExp
 	Icon: ComponentType<any>
 	inject: () => void
-	main?: () => void
 }
 
 const modules: ExtensionModule[] = []

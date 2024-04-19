@@ -41,7 +41,7 @@ export const color = '#9146FF'
 export const match = /^https:\/\/(.+\.)?twitch\.tv/
 export { default as Icon } from 'simple-icons/icons/twitch.svg'
 
-function setupStylesheet() {
+function setupStylesheet () {
 	const style = document.createElement('link')
 	style.setAttribute('rel', 'stylesheet')
 	style.setAttribute('href', chrome.runtime.getURL(window.__BUILD_STYLESHEET__.pdblib))

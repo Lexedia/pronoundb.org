@@ -31,9 +31,9 @@ import { topics } from '../../icons/twitter'
 import { formatPronouns } from '../../utils/pronouns'
 import { fetchPronouns } from '../../utils/fetch'
 import { fetchReactProp } from '../../utils/proxy'
-import { h, css } from '../../utils/dom'
+import { css, h } from '../../utils/dom'
 
-import { decorateAvatar, clearAvatar } from './avatar'
+import { clearAvatar, decorateAvatar } from './avatar'
 
 // Never change this to X
 export const name = 'Twitter'
@@ -41,7 +41,7 @@ export const color = '#1DA1F2'
 export const match = /^https:\/\/(.+\.)?(twitter|x)\.com/
 export { default as Icon } from '../../../assets/twitter.svg'
 
-function setupStylesheet() {
+function setupStylesheet () {
 	const stylePdblib = document.createElement('link')
 	const styleTwitter = document.createElement('link')
 	stylePdblib.setAttribute('rel', 'stylesheet')
@@ -133,8 +133,14 @@ async function injectTweet (tweet: HTMLElement) {
 	if (username && username in usernameToIdCache) {
 		id = usernameToIdCache[username]
 	} else {
-		const directId = await fetchReactProp(tweet, [ { $find: 'tweet', $in: [ 'return', 'memoizedProps' ] }, 'tweet', 'user', 'id_str' ])
-		const retweetId = await fetchReactProp(tweet, [ { $find: 'tweet', $in: [ 'return', 'memoizedProps' ] }, 'tweet', 'retweeted_status', 'user', 'id_str' ])
+		const directId = await fetchReactProp(tweet, [ {
+			$find: 'tweet',
+			$in: [ 'return', 'memoizedProps' ],
+		}, 'tweet', 'user', 'id_str' ])
+		const retweetId = await fetchReactProp(tweet, [ {
+			$find: 'tweet',
+			$in: [ 'return', 'memoizedProps' ],
+		}, 'tweet', 'retweeted_status', 'user', 'id_str' ])
 
 		// Tweets can be removed and injected again, and in this case we cannot trust the data from `directId` and `retweetId`
 		if (!tweet.isConnected) return
@@ -197,7 +203,7 @@ async function injectProfilePopOut (popout: HTMLElement) {
 			{
 				class: parentClass,
 				style: parentStyle,
-				'data-pronoundb': 'true'
+				'data-pronoundb': 'true',
 			},
 			h(
 				'span',
@@ -238,7 +244,10 @@ async function injectAvatarDecoration (img: HTMLElement) {
 
 	let id: string
 	if (wrapper.tagName === 'DIV') {
-		let isSelf = false, queryPath, queryId
+		let isSelf = false
+		let queryPath
+		let queryId
+
 		if (document.querySelector('header')?.contains(wrapper)) {
 			isSelf = true
 			queryPath = [ 'return', 'memoizedProps', 'currentUser' ]
@@ -271,7 +280,10 @@ async function injectAvatarDecoration (img: HTMLElement) {
 			id = usernameToIdCache[username]
 		} else {
 			id = await fetchReactProp(wrapper, [ { $find: 'userId', $in: [ 'return', 'memoizedProps' ] }, 'userId' ])
-			if (!id) id = await fetchReactProp(wrapper, [ { $find: 'id_str', $in: [ 'return', 'memoizedProps', 'viewerUser' ] }, 'id_str' ])
+			if (!id) id = await fetchReactProp(wrapper, [ {
+				$find: 'id_str',
+				$in: [ 'return', 'memoizedProps', 'viewerUser' ],
+			}, 'id_str' ])
 			if (username && id) usernameToIdCache[username] = id
 		}
 	}
@@ -308,8 +320,8 @@ function handleMutation (nodes: MutationRecord[]) {
 				}
 
 				if (
-					added.children[0]?.getAttribute('data-testid') === 'UserDescription' ||
-					added.children[0]?.children[0]?.querySelector('[data-testid="UserProfileHeader_Items"]')
+					added.children[0]?.getAttribute('data-testid') === 'UserDescription'
+					|| added.children[0]?.children[0]?.querySelector('[data-testid="UserProfileHeader_Items"]')
 				) {
 					injectProfileHeader()
 					continue

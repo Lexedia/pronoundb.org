@@ -38,7 +38,6 @@ getModule().then((currentMdl) => {
 					await initializeRuntime()
 				}
 
-				currentMdl.main?.()
 				currentMdl.inject()
 				console.log(`[PronounDB] Loaded ${currentMdl.id} module`)
 			}

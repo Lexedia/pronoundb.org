@@ -62,8 +62,11 @@ function tweakConfig (): Plugin {
 					chunkFileNames: 'assets/[name].chk.js',
 					assetFileNames: 'assets/[name].[ext]',
 				}
+
+				cfg.build.cssMinify = false
+				cfg.build.minify = false
 			}
-		}
+		},
 	}
 }
 
@@ -92,12 +95,11 @@ const outDir = process.env.PDB_BROWSER_TARGET === 'firefox' ? 'dist/firefox' : '
 
 export default defineConfig({
 	build: {
-		assetsInlineLimit: 0,
+		target: 'es2020',
 		outDir: outDir,
+		assetsInlineLimit: 0,
 		rollupOptions: { input: input },
-		modulePreload: {
-			polyfill: false,
-		},
+		modulePreload: { polyfill: false },
 	},
 	envPrefix: [ 'VITE', 'PDB' ],
 	plugins: [
