@@ -26,7 +26,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import { register, collectDefaultMetrics, Counter, Histogram, Gauge } from 'prom-client'
+import { register, collectDefaultMetrics, Counter, Histogram, Gauge, Summary } from 'prom-client'
 import { collection } from './database/account.js'
 import { providers } from './oauth/providers.js'
 
@@ -125,7 +125,19 @@ export const ApiCallVersionCounter = new Counter({
 	labelNames: [ 'version' ],
 })
 
+export const DatabaseLatencySummary = new Summary({
+	name: 'pronoundb_database_latency_summary',
+	help: 'summary of database latency',
+	labelNames: [ 'type', 'op' ],
+})
+
 /// HELPERS
 export function metrics () {
 	return register.metrics()
 }
+
+// Set default values for these to make graphs behave nicely
+CreatedAccountCount.inc(0)
+DeletedAccountCount.inc(0)
+LinkedAccountsAddCount.inc(0)
+LinkedAccountsRemovalCount.inc(0)
