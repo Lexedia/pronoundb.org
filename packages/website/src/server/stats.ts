@@ -97,7 +97,7 @@ async function fetchStats () {
 	])
 
 	stats = {
-		users: count,
+		users: ((count / 100) | 0) * 100,
 		chrome: chrome,
 		firefox: firefox,
 		edge: edge,

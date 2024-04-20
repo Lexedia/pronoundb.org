@@ -44,6 +44,7 @@ import globeSvg from 'feather-icons/dist/icons/globe.svg?raw'
 
 const stats = getStats()
 const flash = handleFlash(Astro)
+const usersFormatted = stats.users.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 ---
 <Layout flash={flash}>
 	<div class='my-12 text-center'>
@@ -54,7 +55,7 @@ const flash = handleFlash(Astro)
 			<p>Keeping track of everyone's pronouns can be complicated, and unfortunate mistakes can happen.</p>
 			<p>PronounDB makes it easy for you to share your pronouns, so people can use the right ones without even asking.</p>
 			<p>It also helps you know the pronouns of the people you discuss with.</p>
-			<p>There's {stats.users} people sharing their pronouns! Join them now!</p>
+			<p>There's more than {usersFormatted} people sharing their pronouns! Join them now!</p>
 		</div>
 	</div>
 	<div class='flex flex-col md:flex-row gap-6 mb-6'>
