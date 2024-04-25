@@ -29,7 +29,7 @@
 import type { APIContext } from 'astro'
 import { getCollection } from 'astro:content'
 import { authenticate, validateCsrf } from '@server/auth.js'
-import { updateDecoration } from '@server/database/account.js'
+import { updateDecoration } from '@server/database/users.js'
 import { setFlash } from '@server/flash.js'
 
 const decorations = await getCollection('decorations')
@@ -64,7 +64,7 @@ export async function POST (ctx: APIContext) {
 		}
 	}
 
-	await updateDecoration(user._id, decoration === '_null' ? null : decoration)
+	await updateDecoration(user.id, decoration === '_null' ? null : decoration)
 	setFlash(ctx, 'S_DECORATION_UPDATED')
 	return ctx.redirect('/me')
 }

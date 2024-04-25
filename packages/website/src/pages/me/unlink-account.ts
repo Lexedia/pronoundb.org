@@ -29,7 +29,7 @@
 import type { APIContext } from 'astro'
 import { LinkedAccountsRemovalCount } from '@server/metrics.js'
 import { authenticate, validateCsrf } from '@server/auth.js'
-import { removeLinkedAccount } from '@server/database/account.js'
+import { deleteExternalAccount } from '@server/database/accounts.js'
 import { setFlash } from '@server/flash.js'
 
 export async function POST (ctx: APIContext) {
@@ -56,7 +56,7 @@ export async function POST (ctx: APIContext) {
 	}
 
 	LinkedAccountsRemovalCount.inc({ platform: platform })
-	await removeLinkedAccount(user._id, platform, id)
+	await deleteExternalAccount(platform, id)
 	return ctx.redirect('/me')
 }
 

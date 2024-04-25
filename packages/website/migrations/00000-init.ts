@@ -26,54 +26,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type { APIContext } from 'astro'
-import { transformSetsToIdentifier } from '@pronoundb/pronouns/legacy'
+import type { Sql } from 'postgres'
 
-import { authenticate } from '@server/auth.js'
-import { ApiCallVersionCounter } from '@server/metrics.js'
+export async function up (sql: Sql) {
+	await sql`
+		CREATE TABLE users (
+			id UUID PRIMARY KEY,
+			decoration TEXT DEFAULT NULL,
+			available_decorations TEXT[] NOT NULL DEFAULT '{}'
+		);
+	`
 
-function getCorsHeaders (request: APIContext['request']) {
-	const origin = request.headers.get('origin')
-	const isFirefox = request.headers.get('origin')?.startsWith('moz-extension://')
+	await sql`
+		CREATE TABLE pronouns (
+			user_id UUID NOT NULL,
+			locale TEXT NOT NULL,
+			sets TEXT[] NOT NULL,
+			
+			PRIMARY KEY (user_id, locale),
+			CONSTRAINT fk_user
+				FOREIGN KEY (user_id)
+					REFERENCES users(id)
+					ON DELETE CASCADE
+		);
+	`
 
-	return isFirefox
-		? {
-			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': origin!,
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-allow-credentials': 'true',
-			'access-control-max-age': '600',
-		}
-		: {
-			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': '*',
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-max-age': '600',
-		}
+	await sql`
+		CREATE TABLE accounts (
+			platform TEXT NOT NULL,
+			account_id TEXT NOT NULL,
+			account_name TEXT NOT NULL,
+			user_id UUID NOT NULL,
+
+			PRIMARY KEY (platform, account_id),
+			CONSTRAINT fk_user
+				FOREIGN KEY (user_id)
+					REFERENCES users(id)
+					ON DELETE CASCADE
+		);
+	`
 }
 
-export async function GET (ctx: APIContext) {
-	ApiCallVersionCounter.inc({ version: 1 })
-
-	const user = await authenticate(ctx, true)
-	const body = JSON.stringify({ pronouns: transformSetsToIdentifier(user?.pronouns.en) })
-	return new Response(body, {
-		headers: {
-			...getCorsHeaders(ctx.request),
-			'content-type': 'application/json',
-		},
-	})
-}
-
-export function OPTIONS ({ request }: APIContext) {
-	return new Response(null, {
-		status: 204,
-		headers: getCorsHeaders(request),
-	})
-}
-
-export function ALL () {
-	return new Response(JSON.stringify({ statusCode: 405, error: 'Method not allowed' }), { status: 405 })
+export async function down (sql: Sql) {
+	await sql`DROP TABLE accounts;`
+	await sql`DROP TABLE pronouns;`
+	await sql`DROP TABLE users;`
 }

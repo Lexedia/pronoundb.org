@@ -26,16 +26,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type { WithId } from 'mongodb'
-import type { Account } from './database/account.js'
+import type { User } from './database/database.js'
 import { createHash } from 'crypto'
 
-export function isUserPartOfExperiment (user: WithId<Account>, experiment: string) {
+export function isUserPartOfExperiment (user: User, experiment: string) {
 	const rollout = Number(process.env[`EXPERIMENT_${experiment.toUpperCase()}_ROLLOUT`])
 	if (!rollout || isNaN(rollout)) {
 		return false
 	}
 
-	const md5 = createHash('md5').update(experiment).update(user._id.id).digest()
+	const md5 = createHash('md5').update(experiment).update(user.id).digest()
 	return md5[0]! < rollout
 }

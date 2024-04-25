@@ -26,8 +26,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type { ExternalAccount } from '../../database/account.js'
-import type { FlashMessage } from '../../flash.js'
+import type { ExternalAccount } from '@server/database/database.js'
+import type { FlashMessage } from '@server/flash.js'
 
 export const oauthVersion = 2
 export const clientId = import.meta.env.OAUTH_DISCORD_CLIENT
@@ -58,5 +58,9 @@ export async function getSelf (token: string): Promise<ExternalAccount | FlashMe
 	if (!res.ok) return null
 	const data = await res.json()
 
-	return { id: data.id, name: formatName(data.global_name, data.username, data.discriminator), platform: 'discord' }
+	return {
+		platform: 'discord',
+		accountId: data.id,
+		accountName: formatName(data.global_name, data.username, data.discriminator),
+	}
 }

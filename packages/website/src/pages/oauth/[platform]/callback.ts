@@ -27,13 +27,15 @@
  */
 
 import type { APIContext } from 'astro'
+import type { ExternalAccount } from '@server/database/database.js'
 
 import { CreatedAccountCount, LinkedAccountsAddCount } from '@server/metrics.js'
 import { generateToken, authenticate } from '@server/auth.js'
 import { type FlashMessage, setFlash } from '@server/flash.js'
-import { type ExternalAccount, createAccount, findByExternalAccount, addLinkedAccount } from '@server/database/account.js'
 import { type OAuth1Params, callback as callback1 } from '@server/oauth/core/oauth10a.js'
 import { type OAuth2Params, callback as callback2 } from '@server/oauth/core/oauth2.js'
+import { createUser, findByExternalAccount } from '@server/database/users.js'
+import { addExternalAccount } from '@server/database/accounts.js'
 
 type Params = OAuth1Params | OAuth2Params
 const INTENTS = [ 'register', 'login', 'link' ]
@@ -75,23 +77,19 @@ export async function GET (ctx: APIContext) {
 	}
 
 	if (intent === 'link') {
-		const existingAccount = await findByExternalAccount(external)
-		if (existingAccount && !existingAccount._id.equals(user!._id)) {
+		const successful = await addExternalAccount(user!.id, external)
+		if (!successful) {
 			setFlash(ctx, 'E_ACCOUNT_TAKEN')
 			return ctx.redirect('/me')
 		}
 
-		if (!existingAccount) {
-			LinkedAccountsAddCount.inc({ platform: external.platform })
-			await addLinkedAccount(user!._id, external)
-		}
-
+		LinkedAccountsAddCount.inc({ platform: external.platform })
 		return ctx.redirect('/me')
 	}
 
 	const account = intent === 'register'
-		? await createAccount(external)
-		: await findByExternalAccount(external).then((acc) => acc?._id)
+		? await createUser(external)
+		: await findByExternalAccount(external.platform, external.accountId)
 
 	if (!account) {
 		setFlash(ctx, intent === 'register' ? 'E_ACCOUNT_EXISTS' : 'E_ACCOUNT_NOT_FOUND')
@@ -103,7 +101,7 @@ export async function GET (ctx: APIContext) {
 		LinkedAccountsAddCount.inc({ platform: external.platform })
 	}
 
-	const authToken = generateToken({ id: account.toString() })
+	const authToken = generateToken({ id: account.id })
 	ctx.cookies.set('token', authToken, { path: '/', maxAge: 365 * 24 * 3600, httpOnly: true, secure: import.meta.env.PROD })
 	if (intent === 'register') setFlash(ctx, 'S_REGISTERED')
 	return ctx.redirect('/me')

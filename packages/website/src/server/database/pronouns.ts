@@ -26,43 +26,59 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import type { RowList } from 'postgres'
 import type { Sets } from '@pronoundb/pronouns/sets'
-import postgres from 'postgres'
+import type { PronounsSets } from './database.js'
 
-export type User = {
-	id: string // UUIDv7
-	decoration: string
-	availableDecorations: string[]
+import { DatabaseLatencySummary } from '@server/metrics.js'
+import sql from './database.js'
+
+export async function findPronounsOf (userId: string, locale?: undefined): Promise<RowList<PronounsSets[]>>
+export async function findPronounsOf (userId: string, locale: string): Promise<PronounsSets>
+export async function findPronounsOf (userId: string, locale?: string) {
+	if (locale) {
+		const finishTimer = DatabaseLatencySummary.startTimer({ type: 'read', op: 'find_pronouns_with_locale' })
+		const result = await sql<PronounsSets[]>`
+			SELECT locale, sets
+			FROM pronouns
+			WHERE user_id = ${userId}
+			  AND locale = ${locale}
+		`
+
+		finishTimer()
+		return result[0]
+	}
+
+	const finishTimer = DatabaseLatencySummary.startTimer({ type: 'read', op: 'find_pronouns' })
+	const res = await sql<PronounsSets[]>`
+		SELECT locale, sets
+		FROM pronouns
+		WHERE user_id = ${userId}
+	`
+
+	finishTimer()
+	return res
 }
 
-export type UserData = User & {
-	accounts: ExternalAccount[]
-	pronouns: Record<string, Sets>
+export async function setPronouns (userId: string, locale: string, sets: Sets) {
+	const finishTimer = DatabaseLatencySummary.startTimer({ type: 'write', op: 'update_pronouns' })
+	await sql`
+		INSERT INTO pronouns (user_id, locale, sets)
+		VALUES (${userId}, ${locale}, ${sets})
+		ON CONFLICT (user_id, locale) DO UPDATE SET sets = EXCLUDED.sets
+	`
+
+	finishTimer()
 }
 
-export type UserLookupData = {
-	accountId: string
-	decoration: string
-	pronouns: Record<string, Sets>
-}
+export async function deletePronouns (userId: string, locale: string) {
+	const finishTimer = DatabaseLatencySummary.startTimer({ type: 'write', op: 'delete_pronouns' })
+	await sql`
+		DELETE
+		FROM pronouns
+		WHERE user_id = ${userId}
+		  AND locale = ${locale}
+	`
 
-export type ExternalAccount = {
-	platform: string
-	accountId: string
-	accountName: string
+	finishTimer()
 }
-
-export type ExternalAccountOfUser = ExternalAccount & {
-	userId: string // UUIDv7
-}
-
-export type PronounsSets = {
-	locale: string
-	sets: Sets
-}
-
-export type PronounsSetsOfUser = PronounsSets & {
-	userId: string // UUIDv7
-}
-
-export default postgres({ transform: postgres.camel })

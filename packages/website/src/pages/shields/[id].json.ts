@@ -27,28 +27,27 @@
  */
 
 import type { APIContext } from 'astro'
-import { ObjectId } from 'mongodb'
 import { formatPronouns } from '@pronoundb/pronouns/formatter'
-import { findById } from '@server/database/account.js'
+import { findPronounsOf } from '@server/database/pronouns.js'
+import { isValidUuid, resolveDatabaseId } from '@server/database/utils.js'
 
 export async function GET ({ url, params }: APIContext) {
-	if (!params.id || !ObjectId.isValid(params.id)) {
+	if (!params.id || !isValidUuid(params.id)) {
 		return new Response('400: Bad request', { status: 400 })
 	}
 
 	const locale = params.locale || 'en'
-	const id = new ObjectId(params.id)
-	const user = await findById(id)
-	const sets = user?.sets[locale]
+	const id = resolveDatabaseId(params.id)
+	const pronouns = await findPronounsOf(id, locale)
 
-	if (!sets) {
+	if (!pronouns) {
 		return new Response(
 			JSON.stringify({
 				schemaVersion: 1,
 				label: 'error',
 				message: 'not found',
 				isError: true,
-			})
+			}),
 		)
 	}
 
@@ -57,7 +56,7 @@ export async function GET ({ url, params }: APIContext) {
 		JSON.stringify({
 			schemaVersion: 1,
 			label: capitalize ? 'Pronouns' : 'pronouns',
-			message: formatPronouns(sets, capitalize, locale),
+			message: formatPronouns(pronouns.sets, capitalize, locale),
 		}),
 	)
 }

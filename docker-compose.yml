@@ -5,7 +5,19 @@ services:
       - 27017:27017
     volumes:
       - db-data:/data/db
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pronoundb
+      POSTGRES_PASSWORD: seekwet!
+      POSTGRES_DATABASE: pronoundb
+    ports:
+      - 5432:5432
+    volumes:
+      - pg-data:/var/lib/postgresql/data
 
 volumes:
   db-data:
+    driver: local
+  pg-data:
     driver: local

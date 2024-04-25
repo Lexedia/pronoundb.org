@@ -26,54 +26,49 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type { APIContext } from 'astro'
-import { transformSetsToIdentifier } from '@pronoundb/pronouns/legacy'
+// Script to migrate data from Mongo to Postgres
 
-import { authenticate } from '@server/auth.js'
-import { ApiCallVersionCounter } from '@server/metrics.js'
+import { MongoClient } from 'mongodb'
+import postgres from 'postgres'
 
-function getCorsHeaders (request: APIContext['request']) {
-	const origin = request.headers.get('origin')
-	const isFirefox = request.headers.get('origin')?.startsWith('moz-extension://')
+function transformId (id) {
+	const timestamp = (parseInt(id.slice(0, 8), 16) * 1e3).toString(16).padStart(12, '0')
+	return `${timestamp.slice(0, 8)}-${timestamp.slice(8)}-736c-aa79-${id.slice(12, 24)}`
+}
 
-	return isFirefox
-		? {
-			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': origin!,
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-allow-credentials': 'true',
-			'access-control-max-age': '600',
+const sql = postgres()
+const client = new MongoClient(process.env.MONGO_DSN)
+await client.connect()
+
+let count = 0
+for await (const account of client.db().collection('accounts').find()) {
+	const newId = transformId(account._id.toString())
+	await sql.begin(async (sql) => {
+		await sql`
+			INSERT INTO users (id, decoration, available_decorations)
+			VALUES (${newId}, ${account.decoration}, ${account.availableDecorations})
+		`
+
+		for (const acc of account.accounts) {
+			await sql`
+				INSERT INTO accounts (platform, account_id, account_name, user_id)
+				VALUES (${acc.platform}, ${acc.id}, ${acc.name}, ${newId})
+			`
 		}
-		: {
-			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': '*',
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-max-age': '600',
+
+		for (const locale in account.sets) {
+			if (locale in account.sets) {
+				await sql`
+					INSERT INTO pronouns (user_id, locale, sets)
+					VALUES (${newId}, ${locale}, ${account.sets[locale]})
+				`
+			}
 		}
-}
-
-export async function GET (ctx: APIContext) {
-	ApiCallVersionCounter.inc({ version: 1 })
-
-	const user = await authenticate(ctx, true)
-	const body = JSON.stringify({ pronouns: transformSetsToIdentifier(user?.pronouns.en) })
-	return new Response(body, {
-		headers: {
-			...getCorsHeaders(ctx.request),
-			'content-type': 'application/json',
-		},
 	})
+
+	count++
 }
 
-export function OPTIONS ({ request }: APIContext) {
-	return new Response(null, {
-		status: 204,
-		headers: getCorsHeaders(request),
-	})
-}
-
-export function ALL () {
-	return new Response(JSON.stringify({ statusCode: 405, error: 'Method not allowed' }), { status: 405 })
-}
+console.log('done, migrated %d accounts', count)
+client.close()
+sql.end()

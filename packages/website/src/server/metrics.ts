@@ -27,7 +27,7 @@
  */
 
 import { register, collectDefaultMetrics, Counter, Histogram, Gauge, Summary } from 'prom-client'
-import { collection } from './database/account.js'
+import { countUsers, countAccountsPerPlatform } from '@server/database/count.js'
 import { providers } from './oauth/providers.js'
 
 if (import.meta.env.DEV) {
@@ -45,7 +45,7 @@ new Gauge({
 	help: 'accounts count',
 	labelNames: [],
 	collect: async function () {
-		const count = await collection.countDocuments()
+		const count = await countUsers()
 		this.set({}, count)
 	},
 })
@@ -59,12 +59,10 @@ new Gauge({
 		// - lol yea whatever hehe
 		// - ................
 		// - *noms cookie*
-		await Promise.all(
-			providers.map(
-				(p) => collection.countDocuments({ 'accounts.platform': p })
-					.then((count) => this.set({ platform: p }, count))
-			)
-		)
+		const counts = await countAccountsPerPlatform()
+		for (const count of counts) {
+			this.set({ platform: count.platform }, count.accounts)
+		}
 	},
 })
 

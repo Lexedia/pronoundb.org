@@ -27,12 +27,12 @@
  */
 
 import type { APIContext } from 'astro'
-import type { ExternalAccount } from '../../database/account.js'
 import type { ParsedUrlQueryInput } from 'querystring'
+import type { ExternalAccount } from '@server/database/database.js'
 
-import { randomUUID, createHmac } from 'crypto'
 import { encode, decode } from 'querystring'
-import { type FlashMessage, setFlash } from '../../flash.js'
+import { randomUUID, createHmac } from 'crypto'
+import { type FlashMessage, setFlash } from '@server/flash.js'
 
 export type OAuth1Params = {
 	oauthVersion: 1

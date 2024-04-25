@@ -30,7 +30,7 @@ import type { APIContext } from 'astro'
 import { transformSetsToIdentifier } from '@pronoundb/pronouns/legacy'
 
 import { LookupRequestsCounter, LookupIdsCounter, LookupHitCounter, ApiCallVersionCounter } from '@server/metrics.js'
-import { findPronounsOf } from '@server/database/account.js'
+import { lookupPronouns } from '@server/database/users.js'
 
 const providers = [
 	'discord',
@@ -68,16 +68,15 @@ export async function GET (ctx: APIContext) {
 		)
 	}
 
-	const cursor = findPronounsOf(platform, [ id ])
-	const user = await cursor.next()
-	await cursor.close()
+	const users = await lookupPronouns(platform, [ id ])
+	const user = users[0]
 
 	// Collect metrics
 	LookupRequestsCounter.inc({ platform: platform, method: 'single' })
 	LookupIdsCounter.inc({ platform: platform })
 	if (user) LookupHitCounter.inc({ platform: platform })
 
-	const body = JSON.stringify({ pronouns: transformSetsToIdentifier(user?.sets.en) })
+	const body = JSON.stringify({ pronouns: transformSetsToIdentifier(user?.pronouns.en) })
 	return new Response(body, {
 		headers: {
 			vary: 'origin',

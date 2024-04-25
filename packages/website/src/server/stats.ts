@@ -26,7 +26,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import database from './database/database.js'
+import { countUsers } from '@server/database/count.js'
 
 const CHROME = 'https://chromewebstore.google.com/detail/pronoundb/nblkbiljcjfemkfjnhoobnojjgjdmknf?hl=en'
 const FIREFOX = 'https://addons.mozilla.org/api/v5/addons/addon/pronoundb'
@@ -90,7 +90,7 @@ async function fetchEdgeStats () {
 async function fetchStats () {
 	lastFetch = Date.now() // Update last fetch immediately to prevent concurrent re-fetches
 	const [ count, chrome, firefox, edge ] = await Promise.all([
-		database.collection('accounts').estimatedDocumentCount(),
+		countUsers(),
 		fetchChromeStats(),
 		fetchFirefoxStats(),
 		fetchEdgeStats(),
@@ -109,7 +109,7 @@ export default function getStats () {
 	if ((Date.now() - lastFetch) > 3600e3 && import.meta.env.PROD) {
 		// Initiate a re-fetch in background, but don't wait for new data
 		// We can serve stale data and wait for new one to arrive
-		fetchStats()
+		void fetchStats()
 	}
 
 	return stats

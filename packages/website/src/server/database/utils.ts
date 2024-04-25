@@ -26,54 +26,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type { APIContext } from 'astro'
-import { transformSetsToIdentifier } from '@pronoundb/pronouns/legacy'
+const UUID_RE = /^[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}$/i
 
-import { authenticate } from '@server/auth.js'
-import { ApiCallVersionCounter } from '@server/metrics.js'
+const OBJECT_ID_RE = /^[0-9a-f]{24}$/i
 
-function getCorsHeaders (request: APIContext['request']) {
-	const origin = request.headers.get('origin')
-	const isFirefox = request.headers.get('origin')?.startsWith('moz-extension://')
+export function resolveDatabaseId (id: string) {
+	if (id.length === 24) { // Legacy ObjectID
+		const timestamp = (parseInt(id.slice(0, 8), 16) * 1e3).toString(16).padStart(12, '0')
+		return `${timestamp.slice(0, 8)}-${timestamp.slice(8)}-736c-aa79-${id.slice(12, 24)}`
+	}
 
-	return isFirefox
-		? {
-			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': origin!,
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-allow-credentials': 'true',
-			'access-control-max-age': '600',
-		}
-		: {
-			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': '*',
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-max-age': '600',
-		}
+	return id
 }
 
-export async function GET (ctx: APIContext) {
-	ApiCallVersionCounter.inc({ version: 1 })
-
-	const user = await authenticate(ctx, true)
-	const body = JSON.stringify({ pronouns: transformSetsToIdentifier(user?.pronouns.en) })
-	return new Response(body, {
-		headers: {
-			...getCorsHeaders(ctx.request),
-			'content-type': 'application/json',
-		},
-	})
-}
-
-export function OPTIONS ({ request }: APIContext) {
-	return new Response(null, {
-		status: 204,
-		headers: getCorsHeaders(request),
-	})
-}
-
-export function ALL () {
-	return new Response(JSON.stringify({ statusCode: 405, error: 'Method not allowed' }), { status: 405 })
+export function isValidUuid (id: string) {
+	return UUID_RE.test(id) || OBJECT_ID_RE.test(id)
 }

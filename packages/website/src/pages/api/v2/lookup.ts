@@ -28,9 +28,15 @@
 
 import type { APIContext } from 'astro'
 
-import { LookupRequestsCounter, LookupIdsCounter, LookupHitCounter, LookupBulkSizeHistogram, ApiCallVersionCounter } from '@server/metrics.js'
-import { findPronounsOf } from '@server/database/account.js'
 import { providers } from '@server/oauth/providers.js'
+import { lookupPronouns } from '@server/database/users.js'
+import {
+	ApiCallVersionCounter,
+	LookupBulkSizeHistogram,
+	LookupHitCounter,
+	LookupIdsCounter,
+	LookupRequestsCounter,
+} from '@server/metrics.js'
 
 export async function GET (ctx: APIContext) {
 	ApiCallVersionCounter.inc({ version: 2 })
@@ -54,7 +60,7 @@ export async function GET (ctx: APIContext) {
 					'access-control-max-age': '600',
 					'content-type': 'application/json',
 				},
-			}
+			},
 		)
 	}
 
@@ -74,7 +80,7 @@ export async function GET (ctx: APIContext) {
 					'access-control-max-age': '600',
 					'content-type': 'application/json',
 				},
-			}
+			},
 		)
 	}
 
@@ -96,19 +102,18 @@ export async function GET (ctx: APIContext) {
 					'access-control-max-age': '600',
 					'content-type': 'application/json',
 				},
-			}
+			},
 		)
 	}
 
-	const cursor = findPronounsOf(platform, Array.from(ids))
+	const usersFound = await lookupPronouns(platform, Array.from(ids))
 
-	let idsHitCount = 0
-	const res = Object.create(null)
-	for await (const user of cursor) {
-		idsHitCount++
-		res[user.account.id] = {
+	const res = {} as any
+	for (let i = 0; i < usersFound.length; i++) {
+		const user = usersFound[i]!
+		res[user.accountId] = {
 			decoration: user.decoration,
-			sets: user.sets,
+			sets: user.pronouns,
 		}
 	}
 
@@ -116,7 +121,7 @@ export async function GET (ctx: APIContext) {
 	const method = idsCount === 1 ? 'single' : 'bulk'
 	LookupRequestsCounter.inc({ platform: platform, method: method })
 	LookupIdsCounter.inc({ platform: platform }, idsCount)
-	LookupHitCounter.inc({ platform: platform }, idsHitCount)
+	LookupHitCounter.inc({ platform: platform }, usersFound.length)
 	if (method === 'bulk') {
 		LookupBulkSizeHistogram.observe({ platform: platform }, idsCount)
 	}
