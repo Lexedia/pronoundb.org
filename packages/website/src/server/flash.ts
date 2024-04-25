@@ -26,11 +26,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type { AstroGlobal, APIContext } from 'astro'
+import type { APIContext, AstroGlobal } from 'astro'
 
 export type FlashMessage = keyof typeof FlashMessages
 
-export const FlashMessages = <const> {
+export const FlashMessages = <const>{
 	// Success
 	S_REGISTERED: 'Welcome!! Thank you for creating your PronounDB account. Start by setting your pronouns, and then consider linking your other accounts. Have a great stay!',
 	S_PRONOUNS_UPDATED: 'Your pronouns have been updated. Changes might take up to a few minutes to propagate.',
@@ -65,6 +65,9 @@ export const FlashMessages = <const> {
 
 	E_DECORATION_UNKNOWN: 'The decoration you\'ve entered is invalid.',
 	E_DECORATION_LOCKED: 'The decoration you\'ve selected is not available to you.',
+
+	// External codes, may be used by intermediary infrastructure (e.g. nginx reverse proxy)
+	X_TEMPORARILY_UNAVAILABLE: 'This is temporarily unavailable. Sorry for the inconvenience.',
 }
 
 export function handleFlash ({ cookies }: AstroGlobal) {
