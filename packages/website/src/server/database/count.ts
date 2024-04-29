@@ -34,7 +34,7 @@ export type PlatformCountData = { platform: string, accounts: number }
 export async function countUsers () {
 	const finishTimer = DatabaseLatencySummary.startTimer({ type: 'read', op: 'count_users' })
 	const res = await sql<Array<{ count: number }>>`
-		SELECT COUNT(*) as count
+		SELECT COUNT(*)::int as count
 		FROM users
 	`
 
@@ -45,7 +45,7 @@ export async function countUsers () {
 export async function countAccountsPerPlatform () {
 	const finishTimer = DatabaseLatencySummary.startTimer({ type: 'read', op: 'count_accounts_per_platform' })
 	const res = await sql<PlatformCountData[]>`
-		SELECT platform, COUNT(*) as accounts
+		SELECT platform, COUNT(*)::int as accounts
 		FROM accounts
 		GROUP BY platform
 	`
