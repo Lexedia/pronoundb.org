@@ -1,10 +1,4 @@
 services:
-  mongo:
-    image: mongo:5-focal
-    ports:
-      - 27017:27017
-    volumes:
-      - db-data:/data/db
   postgres:
     image: postgres:16-alpine
     environment:
@@ -17,7 +11,5 @@ services:
       - pg-data:/var/lib/postgresql/data
 
 volumes:
-  db-data:
-    driver: local
   pg-data:
     driver: local
