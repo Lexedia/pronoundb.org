@@ -27,15 +27,14 @@
  */
 
 import type { APIContext } from 'astro'
-
-import { ObjectId } from 'mongodb'
+import { isValidUuid, resolveDatabaseId } from '@server/database/utils.js'
+import { findUserData } from '@server/database/users.js'
 import { ApiCallVersionCounter } from '@server/metrics.js'
-import { findById } from '@server/database/account.js'
 
 export async function GET (ctx: APIContext) {
 	ApiCallVersionCounter.inc({ version: 2 })
 
-	if (!ctx.params.id || !ObjectId.isValid(ctx.params.id)) {
+	if (!ctx.params.id || !isValidUuid(ctx.params.id)) {
 		return new Response(
 			JSON.stringify({ code: 400, error: 'Bad request', message: 'Invalid user ID' }),
 			{
@@ -51,8 +50,8 @@ export async function GET (ctx: APIContext) {
 		)
 	}
 
-	const id = new ObjectId(ctx.params.id)
-	const user = await findById(id)
+	const id = resolveDatabaseId(ctx.params.id)
+	const user = await findUserData(id)
 	if (!user) {
 		return new Response(
 			JSON.stringify({ code: 404, error: 'Not found' }),
@@ -70,9 +69,9 @@ export async function GET (ctx: APIContext) {
 	}
 
 	const body = JSON.stringify({
-		id: ctx.params.id,
+		id: id,
 		decoration: user.decoration,
-		sets: user.sets,
+		sets: user.pronouns,
 	})
 
 	return new Response(body, {

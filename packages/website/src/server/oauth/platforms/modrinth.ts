@@ -26,8 +26,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type { ExternalAccount } from '../../database/account.js'
-import type { FlashMessage } from '../../flash.js'
+import type { ExternalAccount } from '@server/database/database.js'
+import type { FlashMessage } from '@server/flash.js'
 
 export const disabled = true // https://github.com/modrinth/labrinth/issues/868
 
@@ -50,5 +50,9 @@ export async function getSelf (token: string): Promise<ExternalAccount | FlashMe
 	if (!res.ok) return null
 	const { data } = await res.json()
 
-	return { id: data.id, name: `${data.name} (@${data.username})`, platform: 'modrinth' }
+	return {
+		platform: 'modrinth',
+		accountId: data.id,
+		accountName: `${data.name} (@${data.username})`,
+	}
 }

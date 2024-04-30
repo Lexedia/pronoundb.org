@@ -66,7 +66,7 @@ export async function GET (ctx: APIContext) {
 
 	const body = JSON.stringify({
 		decoration: user.decoration,
-		sets: user.sets,
+		sets: user.pronouns,
 	})
 
 	return new Response(body, {

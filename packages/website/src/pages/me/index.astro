@@ -78,7 +78,7 @@ const csrf = createCsrf(Astro)
 		To avoid any form of biases, pronouns are sorted alphabetically within their category. You're not required to
 		set everything, just pick what you need.
 	</p>
-	<PronounsSelector sets={user.sets.en} locale='en' csrf={csrf}/>
+	<PronounsSelector sets={user.pronouns.en} locale='en' csrf={csrf}/>
 
 	<h2 class='text-xl font-bold mb-2 flex gap-4 items-center'>
 		<span>Decoration</span>
@@ -102,7 +102,7 @@ const csrf = createCsrf(Astro)
 		/>
 	</div>
 	{showDonationCta && !isDonator && (
-		<div class='flex flex-none gap-4 items-center mb-2 px-4 py-2 font-semibold border rounded border-amber-500 bg-amber-100 text-amber-700 dark:border-amber-200 dark:bg-yellow-800 dark:text-amber-200 mb-8'>
+		<div class='flex flex-none gap-4 items-center px-4 py-2 font-semibold border rounded border-amber-500 bg-amber-100 text-amber-700 dark:border-amber-200 dark:bg-yellow-800 dark:text-amber-200 mb-8'>
 			<div class='w-6 h-6 shrink-0 ' set:html={sparklesSvg}/>
 			<p>
 				Psst! There's additional decorations you can get by becoming a donator!
@@ -120,7 +120,7 @@ const csrf = createCsrf(Astro)
 
 			return (
 				<Platform color={platform.color}>
-					<Fragment>{account.name}</Fragment>
+					<Fragment>{account.accountName}</Fragment>
 					<Fragment slot='icon' set:html={platform.icon}/>
 					<form
 						slot='extra'
@@ -131,7 +131,7 @@ const csrf = createCsrf(Astro)
 					>
 						<input type='hidden' name='csrfToken' value={csrf}/>
 						<input type='hidden' name='platform' value={account.platform}/>
-						<input type='hidden' name='id' value={account.id}/>
+						<input type='hidden' name='id' value={account.accountId}/>
 						{user.accounts.length !== 1 && <button class='cursor-pointer w-full h-hull' title='Unlink account' set:html={xSvg}/>}
 					</form>
 				</Platform>
@@ -147,7 +147,7 @@ const csrf = createCsrf(Astro)
 	</div>
 
 	<h2 class='text-xl font-bold mb-2'>Advanced settings</h2>
-	<p class='mb-1'>PronounDB ID: <code class='bg-gray-200 px-1 rounded dark:bg-gray-700'>{user._id.toString()}</code></p>
+	<p class='mb-1'>PronounDB ID: <code class='bg-gray-200 px-1 rounded dark:bg-gray-700'>{user.id}</code></p>
 	<p class='mb-4'>This ID may be useful for some of the <Link href='/wiki/api-docs'>API endpoints</Link>.</p>
 
 	<h3 class='text-lg font-semibold mb-2'>Delete my account</h3>

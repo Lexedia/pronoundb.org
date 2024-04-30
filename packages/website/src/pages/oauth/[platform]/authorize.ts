@@ -58,7 +58,7 @@ export async function GET (ctx: APIContext) {
 
 	switch (platform.oauthVersion) {
 		case 1:
-			return (await authorize1(ctx, platform)) ?? ctx.redirect(intent === 'link' ? '/me' : '/')
+			return await authorize1(ctx, platform) ?? ctx.redirect(intent === 'link' ? '/me' : '/')
 		case 2:
 			return authorize2(ctx, platform)
 	}

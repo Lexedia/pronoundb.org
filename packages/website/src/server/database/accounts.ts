@@ -26,54 +26,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type { APIContext } from 'astro'
-import { transformSetsToIdentifier } from '@pronoundb/pronouns/legacy'
+import type { ExternalAccount } from './database.js'
+import sql from './database.js'
+import { DatabaseLatencySummary } from '@server/metrics.js'
 
-import { authenticate } from '@server/auth.js'
-import { ApiCallVersionCounter } from '@server/metrics.js'
+export async function addExternalAccount (userId: string, account: ExternalAccount) {
+	const finishTimer = DatabaseLatencySummary.startTimer({ type: 'write', op: 'add_external_account' })
+	const result = await sql`
+		INSERT INTO accounts (platform, account_id, account_name, user_id)
+		VALUES (${account.platform}, ${account.accountId}, ${account.accountName}, ${userId})
+		ON CONFLICT (platform, account_id) DO UPDATE SET account_name = EXCLUDED.account_name
+		WHERE accounts.user_id = EXCLUDED.user_id
+		RETURNING user_id
+	`
 
-function getCorsHeaders (request: APIContext['request']) {
-	const origin = request.headers.get('origin')
-	const isFirefox = request.headers.get('origin')?.startsWith('moz-extension://')
-
-	return isFirefox
-		? {
-			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': origin!,
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-allow-credentials': 'true',
-			'access-control-max-age': '600',
-		}
-		: {
-			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': '*',
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-max-age': '600',
-		}
+	finishTimer()
+	return result.length === 1
 }
 
-export async function GET (ctx: APIContext) {
-	ApiCallVersionCounter.inc({ version: 1 })
+export async function updateExternalAccount (account: ExternalAccount) {
+	const finishTimer = DatabaseLatencySummary.startTimer({ type: 'write', op: 'update_external_account' })
+	await sql`
+		UPDATE accounts
+		SET account_name = ${account.accountName}
+		WHERE platform = ${account.platform}
+		  AND account_id = ${account.accountId}
+	`
 
-	const user = await authenticate(ctx, true)
-	const body = JSON.stringify({ pronouns: transformSetsToIdentifier(user?.pronouns.en) })
-	return new Response(body, {
-		headers: {
-			...getCorsHeaders(ctx.request),
-			'content-type': 'application/json',
-		},
-	})
+	finishTimer()
 }
 
-export function OPTIONS ({ request }: APIContext) {
-	return new Response(null, {
-		status: 204,
-		headers: getCorsHeaders(request),
-	})
-}
+export async function deleteExternalAccount (platform: string, accountId: string) {
+	const finishTimer = DatabaseLatencySummary.startTimer({ type: 'write', op: 'delete_external_account' })
+	await sql`
+		DELETE
+		FROM accounts
+		WHERE platform = ${platform}
+		  AND account_id = ${accountId}
+	`
 
-export function ALL () {
-	return new Response(JSON.stringify({ statusCode: 405, error: 'Method not allowed' }), { status: 405 })
+	finishTimer()
 }

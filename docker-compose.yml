@@ -1,11 +1,15 @@
 services:
-  mongo:
-    image: mongo:5-focal
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pronoundb
+      POSTGRES_PASSWORD: seekwet!
+      POSTGRES_DATABASE: pronoundb
     ports:
-      - 27017:27017
+      - 5432:5432
     volumes:
-      - db-data:/data/db
+      - pg-data:/var/lib/postgresql/data
 
 volumes:
-  db-data:
+  pg-data:
     driver: local

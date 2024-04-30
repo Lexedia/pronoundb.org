@@ -30,7 +30,7 @@ import type { APIContext } from 'astro'
 import type { Sets } from '@pronoundb/pronouns/sets'
 import { PronounSets } from '@pronoundb/pronouns/sets'
 import { authenticate, validateCsrf } from '@server/auth.js'
-import { updatePronouns, deletePronouns } from '@server/database/account.js'
+import { setPronouns, deletePronouns } from '@server/database/pronouns.js'
 import { setFlash } from '@server/flash.js'
 
 export async function POST (ctx: APIContext) {
@@ -100,7 +100,7 @@ export async function POST (ctx: APIContext) {
 	if (set2 !== 'unspecified') sets.push(set2)
 	if (set3 !== 'unspecified') sets.push(set3)
 
-	await (sets.length ? updatePronouns(user._id, sets, locale) : deletePronouns(user._id, locale))
+	await (sets.length ? setPronouns(user.id, locale, sets) : deletePronouns(user.id, locale))
 	setFlash(ctx, 'S_PRONOUNS_UPDATED')
 	return ctx.redirect('/me')
 }

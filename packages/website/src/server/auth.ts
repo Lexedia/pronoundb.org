@@ -27,10 +27,10 @@
  */
 
 import type { APIContext } from 'astro'
-import { ObjectId } from 'mongodb'
 import { createHash, randomBytes, timingSafeEqual } from 'crypto'
 import { createSigner, createVerifier } from 'fast-jwt'
-import { findById } from './database/account.js'
+import { findUserData } from './database/users.js'
+import { resolveDatabaseId } from '@server/database/utils.js'
 
 export type JwtPayload = { id: string }
 
@@ -81,7 +81,7 @@ export async function authenticate ({ cookies }: APIContext, lax?: boolean) {
 
 	try {
 		const { id } = verifier(token)
-		return findById(new ObjectId(id))
+		return findUserData(resolveDatabaseId(id))
 	} catch {
 		// Not deleting the token if invalid is intentional. This allows the extension to still show up pronouns.
 		return null

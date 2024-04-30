@@ -26,8 +26,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import type { ExternalAccount } from '../../database/account.js'
-import type { FlashMessage } from '../../flash.js'
+import type { ExternalAccount } from '@server/database/database.js'
+import type { FlashMessage } from '@server/flash.js'
 
 export const oauthVersion = 2
 export const clientId = import.meta.env.OAUTH_MICROSOFT_CLIENT
@@ -138,5 +138,9 @@ export async function getSelf (token: string): Promise<ExternalAccount | FlashMe
 	if (!data.id) return 'E_MC_NO_LICENSE'
 
 	const uuid = `${data.id.slice(0, 8)}-${data.id.slice(8, 12)}-${data.id.slice(12, 16)}-${data.id.slice(16, 20)}-${data.id.slice(20)}`
-	return { id: uuid, name: data.name, platform: 'minecraft' }
+	return {
+		platform: 'minecraft',
+		accountId: uuid,
+		accountName: data.name,
+	}
 }
