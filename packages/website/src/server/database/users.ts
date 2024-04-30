@@ -37,20 +37,20 @@ export async function createUser (account: ExternalAccount) {
 	try {
 		const finishTimer = DatabaseLatencySummary.startTimer({ type: 'write', op: 'create_user' })
 		const res = await sql.begin(
-			async (sql) => {
-				const userResult = await sql<User[]>`
+			async (tx) => {
+				const userResult = await tx<User[]>`
 					INSERT INTO users (id)
 					VALUES (${id})
 					RETURNING id, decoration, available_decorations
 				`
 
-				await sql`
+				await tx`
 					INSERT INTO accounts (platform, account_id, account_name, user_id)
 					VALUES (${account.platform}, ${account.accountId}, ${account.accountName}, ${id})
 				`
 
 				return userResult[0]
-			},
+			}
 		)
 
 		finishTimer()

@@ -141,6 +141,6 @@ export async function getSelf (token: string): Promise<ExternalAccount | FlashMe
 	return {
 		platform: 'minecraft',
 		accountId: uuid,
-		accountName: data.name
+		accountName: data.name,
 	}
 }

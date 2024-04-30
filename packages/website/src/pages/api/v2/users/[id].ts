@@ -46,7 +46,7 @@ export async function GET (ctx: APIContext) {
 					'access-control-max-age': '600',
 					'content-type': 'application/json',
 				},
-			},
+			}
 		)
 	}
 
@@ -64,7 +64,7 @@ export async function GET (ctx: APIContext) {
 					'access-control-max-age': '600',
 					'content-type': 'application/json',
 				},
-			},
+			}
 		)
 	}
 

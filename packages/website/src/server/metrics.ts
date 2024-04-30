@@ -136,9 +136,9 @@ export function metrics () {
 
 // Set default values for these to make graphs behave nicely
 for (const platform of providers) {
-	CreatedAccountCount.inc({ platform }, 0)
-	LinkedAccountsAddCount.inc({ platform }, 0)
-	LinkedAccountsRemovalCount.inc({ platform }, 0)
+	CreatedAccountCount.inc({ platform: platform }, 0)
+	LinkedAccountsAddCount.inc({ platform: platform }, 0)
+	LinkedAccountsRemovalCount.inc({ platform: platform }, 0)
 }
 
 DeletedAccountCount.inc(0)

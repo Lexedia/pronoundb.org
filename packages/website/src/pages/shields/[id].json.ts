@@ -47,7 +47,7 @@ export async function GET ({ url, params }: APIContext) {
 				label: 'error',
 				message: 'not found',
 				isError: true,
-			}),
+			})
 		)
 	}
 
@@ -57,7 +57,7 @@ export async function GET ({ url, params }: APIContext) {
 			schemaVersion: 1,
 			label: capitalize ? 'Pronouns' : 'pronouns',
 			message: formatPronouns(pronouns.sets, capitalize, locale),
-		}),
+		})
 	)
 }
 

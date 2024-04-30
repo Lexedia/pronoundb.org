@@ -52,6 +52,6 @@ export async function getSelf (token: string): Promise<ExternalAccount | FlashMe
 	return {
 		platform: 'twitter',
 		accountId: data.id,
-		accountName: `${data.name} (@${data.username})`
+		accountName: `${data.name} (@${data.username})`,
 	}
 }
