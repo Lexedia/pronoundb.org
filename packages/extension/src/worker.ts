@@ -32,7 +32,7 @@ import { Endpoints } from './constants.js'
 // ONBOARDING & CHANGE LOGS
 chrome.runtime.onInstalled.addListener((details) => {
 	if (details.reason === 'install') {
-		chrome.tabs.create({ url: 'https://pronoundb.org/onboarding' })
+		void chrome.tabs.create({ url: 'https://pronoundb.org/onboarding' })
 	}
 
 	if (details.reason === 'update') {

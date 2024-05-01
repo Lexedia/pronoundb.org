@@ -29,7 +29,7 @@
 		"@typescript-eslint/parser": "^7.8.0",
 		"archiver": "^7.0.1",
 		"eslint": "^8.57.0",
-		"feather-icons": "^4.29.1",
+		"feather-icons": "^4.29.2",
 		"postcss": "^8.4.38",
 		"preact": "^10.21.0",
 		"rollup-plugin-license": "^3.3.1",
