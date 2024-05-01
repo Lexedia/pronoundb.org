@@ -154,7 +154,6 @@ function handleMutation (mutations: MutationRecord[]) {
 	for (const { addedNodes } of mutations) {
 		for (const node of addedNodes) {
 			if (node instanceof HTMLElement) {
-				console.log(node)
 				if (node.id.startsWith('chat-messages-')) {
 					handleMessage(node)
 					continue

@@ -105,26 +105,40 @@ export function renderDecoration (decoration: DecorationData): Decoration | null
 	}
 }
 
-const BADGES_CACHE = /* @__PURE__ */ new Map<string, Decoration | null>()
+const BADGES_CACHE = /* @__PURE__ */ new Map<string, Decoration | null | Promise<Decoration | null>>()
+
+async function doFetchDecoration (decorationId: string) {
+	const data = await fetchDecoration(decorationId)
+	const renderedDecoration = data ? renderDecoration(data) : null
+
+	BADGES_CACHE.set(decorationId, renderedDecoration)
+	return renderedDecoration
+}
 
 export async function getDecoration (decorationId: string): Promise<Decoration | null> {
 	let decoration = BADGES_CACHE.get(decorationId)
 	if (decoration === void 0) {
-		const data = await fetchDecoration(decorationId)
-		BADGES_CACHE.set(decorationId, decoration = data ? renderDecoration(data) : null)
+		BADGES_CACHE.set(decorationId, decoration = doFetchDecoration(decorationId))
 	}
 
 	return decoration
 }
 
+async function doFetchDecorationExtension (decorationId: string): Promise<Decoration | null> {
+	const res = await chrome.runtime.sendMessage({ kind: 'decoration', decoration: decorationId })
+	if (!res.success) throw new Error(res.error)
+
+	const data = res.data as DecorationData | null
+	const renderedDecoration = data ? renderDecoration(data) : null
+
+	BADGES_CACHE.set(decorationId, renderedDecoration)
+	return renderedDecoration
+}
+
 export async function getDecorationExtension (decorationId: string): Promise<Decoration | null> {
 	let decoration = BADGES_CACHE.get(decorationId)
 	if (decoration === void 0) {
-		const res = await chrome.runtime.sendMessage({ kind: 'decoration', decoration: decorationId })
-		if (!res.success) throw new Error(res.error)
-
-		const data = res.data as DecorationData | null
-		BADGES_CACHE.set(decorationId, decoration = data ? renderDecoration(data) : null)
+		BADGES_CACHE.set(decorationId, decoration = doFetchDecorationExtension(decorationId))
 	}
 
 	return decoration
