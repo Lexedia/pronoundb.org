@@ -93,7 +93,7 @@ export function OPTIONS () {
 	return new Response(null, {
 		status: 204,
 		headers: {
-			vary: 'origin',
+			Vary: 'Origin',
 			'Access-Control-Allow-Methods': 'GET',
 			'Access-Control-Allow-Origin': '*',
 			'Access-Control-Allow-Headers': 'X-PronounDB-Source',

@@ -38,6 +38,7 @@ import PageHeader from '@components/PageHeader.astro'
 import ApiRequest from '@components/ApiRequest.astro'
 import Link from '@components/Link.astro'
 
+import globeIcon from 'feather-icons/dist/icons/globe.svg?raw'
 import infoIcon from 'feather-icons/dist/icons/info.svg?raw'
 
 const PLATFORM_NOTES = {
@@ -51,6 +52,36 @@ const flash = handleFlash(Astro)
 		<Fragment slot='namespace'>About PronounDB</Fragment>
 		<Fragment>API v2 Documentation</Fragment>
 	</PageHeader>
+
+	<div class='flex flex-none gap-4 items-center mb-4 px-4 py-2 border rounded border-pink dark:border-pink-dark'>
+		<div class='w-6 h-6 shrink-0 text-pink dark:text-pink-dark' set:html={globeIcon}/>
+		<div>
+			<p class="mb-2">
+				When querying the PronounDB API, please ensure to use a descriptive User-Agent. This is used to identify
+				your traffic and ensure it is not rejected by anti-abuse policies.
+			</p>
+			<p class="mb-2">
+				A descriptive User-Agent should include at least: the name of the application, the version of the
+				application (if applicable), and optionally a link to a website. Ideally, all this information should
+				be enough to clearly identify your application and finding without too much effort a way to reach
+				out.
+			</p>
+			<p class="mb-2">
+				Don't be <i>overly</i> descriptive, and make sure the information is usable. Non-monotonic version
+				identifiers are difficult to handle as they don't allow to distinguish ranges. Information that's too
+				specific may be a privacy issue for your users as well.
+			</p>
+			<p class="mb-2">
+				If you are unable to configure the User-Agent header, you may use the X-PronounDB-Source header if the
+				default User-Agent is not descriptive enough. Be careful, in some environments this will cause extra
+				CORS preflight requests to occur!
+			</p>
+			<p>
+				If you are unsure about your implementation, or have a general question about the API feel free
+				to <Link href="https://cynthia.dev/contact">reach out</Link>.
+			</p>
+		</div>
+	</div>
 
 	<h2 class='text-2xl font-bold mb-2' id='endpoints'>Endpoint routes</h2>
 	<ApiRequest
