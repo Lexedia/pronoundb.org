@@ -38,18 +38,18 @@ function getCorsHeaders (request: APIContext['request']) {
 	return isFirefox
 		? {
 			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': origin!,
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-allow-credentials': 'true',
-			'access-control-max-age': '600',
+			'Access-Control-Allow-Methods': 'GET',
+			'Access-Control-Allow-Origin': origin!,
+			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+			'Access-Control-Allow-Credentials': 'true',
+			'Access-Control-Max-Age': '7200',
 		}
 		: {
 			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': '*',
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-max-age': '600',
+			'Access-Control-Allow-Methods': 'GET',
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+			'Access-Control-Max-Age': '7200',
 		}
 }
 

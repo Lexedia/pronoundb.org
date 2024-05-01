@@ -40,10 +40,10 @@ export async function GET (ctx: APIContext) {
 			{
 				status: 400,
 				headers: {
-					'access-control-allow-methods': 'GET',
-					'access-control-allow-origin': '*',
-					'access-control-allow-headers': 'x-pronoundb-source',
-					'access-control-max-age': '600',
+					'Access-Control-Allow-Methods': 'GET',
+					'Access-Control-Allow-Origin': '*',
+					'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+					'Access-Control-Max-Age': '7200',
 					'content-type': 'application/json',
 				},
 			}
@@ -58,10 +58,10 @@ export async function GET (ctx: APIContext) {
 			{
 				status: 404,
 				headers: {
-					'access-control-allow-methods': 'GET',
-					'access-control-allow-origin': '*',
-					'access-control-allow-headers': 'x-pronoundb-source',
-					'access-control-max-age': '600',
+					'Access-Control-Allow-Methods': 'GET',
+					'Access-Control-Allow-Origin': '*',
+					'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+					'Access-Control-Max-Age': '7200',
 					'content-type': 'application/json',
 				},
 			}
@@ -76,10 +76,10 @@ export async function GET (ctx: APIContext) {
 
 	return new Response(body, {
 		headers: {
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': '*',
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-max-age': '600',
+			'Access-Control-Allow-Methods': 'GET',
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+			'Access-Control-Max-Age': '7200',
 			'content-type': 'application/json',
 		},
 	})
@@ -89,10 +89,10 @@ export function OPTIONS () {
 	return new Response(null, {
 		status: 204,
 		headers: {
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': '*',
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-max-age': '600',
+			'Access-Control-Allow-Methods': 'GET',
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+			'Access-Control-Max-Age': '7200',
 		},
 	})
 }

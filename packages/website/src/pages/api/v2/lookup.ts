@@ -54,11 +54,11 @@ export async function GET (ctx: APIContext) {
 			{
 				status: 400,
 				headers: {
-					'access-control-allow-methods': 'GET',
-					'access-control-allow-origin': '*',
-					'access-control-allow-headers': 'x-pronoundb-source',
-					'access-control-max-age': '600',
-					'content-type': 'application/json',
+					'Access-Control-Allow-Methods': 'GET',
+					'Access-Control-Allow-Origin': '*',
+					'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+					'Access-Control-Max-Age': '7200',
+					'Content-Type': 'application/json',
 				},
 			}
 		)
@@ -74,11 +74,11 @@ export async function GET (ctx: APIContext) {
 			{
 				status: 400,
 				headers: {
-					'access-control-allow-methods': 'GET',
-					'access-control-allow-origin': '*',
-					'access-control-allow-headers': 'x-pronoundb-source',
-					'access-control-max-age': '600',
-					'content-type': 'application/json',
+					'Access-Control-Allow-Methods': 'GET',
+					'Access-Control-Allow-Origin': '*',
+					'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+					'Access-Control-Max-Age': '7200',
+					'Content-Type': 'application/json',
 				},
 			}
 		)
@@ -96,11 +96,11 @@ export async function GET (ctx: APIContext) {
 			{
 				status: 400,
 				headers: {
-					'access-control-allow-methods': 'GET',
-					'access-control-allow-origin': '*',
-					'access-control-allow-headers': 'x-pronoundb-source',
-					'access-control-max-age': '600',
-					'content-type': 'application/json',
+					'Access-Control-Allow-Methods': 'GET',
+					'Access-Control-Allow-Origin': '*',
+					'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+					'Access-Control-Max-Age': '7200',
+					'Content-Type': 'application/json',
 				},
 			}
 		)
@@ -129,11 +129,11 @@ export async function GET (ctx: APIContext) {
 	const body = JSON.stringify(res)
 	return new Response(body, {
 		headers: {
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': '*',
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-max-age': '600',
-			'content-type': 'application/json',
+			'Access-Control-Allow-Methods': 'GET',
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+			'Access-Control-Max-Age': '7200',
+			'Content-Type': 'application/json',
 		},
 	})
 }
@@ -142,10 +142,10 @@ export function OPTIONS () {
 	return new Response(null, {
 		status: 204,
 		headers: {
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': '*',
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-max-age': '600',
+			'Access-Control-Allow-Methods': 'GET',
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+			'Access-Control-Max-Age': '7200',
 		},
 	})
 }

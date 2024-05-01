@@ -79,12 +79,12 @@ export async function GET (ctx: APIContext) {
 	const body = JSON.stringify({ pronouns: transformSetsToIdentifier(user?.pronouns.en) })
 	return new Response(body, {
 		headers: {
-			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': '*',
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-max-age': '600',
-			'content-type': 'application/json',
+			Vary: 'Origin',
+			'Access-Control-Allow-Methods': 'GET',
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+			'Access-Control-Max-Age': '7200',
+			'Content-Type': 'application/json',
 		},
 	})
 }
@@ -94,10 +94,10 @@ export function OPTIONS () {
 		status: 204,
 		headers: {
 			vary: 'origin',
-			'access-control-allow-methods': 'GET',
-			'access-control-allow-origin': '*',
-			'access-control-allow-headers': 'x-pronoundb-source',
-			'access-control-max-age': '600',
+			'Access-Control-Allow-Methods': 'GET',
+			'Access-Control-Allow-Origin': '*',
+			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+			'Access-Control-Max-Age': '7200',
 		},
 	})
 }

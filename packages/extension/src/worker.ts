@@ -47,7 +47,7 @@ chrome.runtime.onInstalled.addListener((details) => {
 setupExtensionWorker()
 chrome.runtime.onMessage.addListener((request, _, cb) => {
 	if (request.kind === 'pronouns') {
-		fetch(Endpoints.LOOKUP(request.platform, request.ids), { headers: { 'x-pronoundb-source': `WebExtension/${import.meta.env.PDB_EXT_VERSION}` } })
+		fetch(Endpoints.LOOKUP(request.platform, request.ids), { headers: { 'X-PronounDB-Source': `WebExtension/${import.meta.env.PDB_EXT_VERSION}` } })
 			.then((r) => r.json())
 			.then((d) => cb({ success: true, data: d }))
 			.catch((e) => cb({ success: false, error: e.toString() }))
