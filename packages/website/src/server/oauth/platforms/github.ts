@@ -40,9 +40,9 @@ export const scopes = []
 export async function getSelf (token: string): Promise<ExternalAccount | FlashMessage | null> {
 	const res = await fetch('https://api.github.com/user', {
 		headers: {
-			accept: 'application/vnd.github.v3+json',
-			authorization: `token ${token}`,
-			'user-agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
+			Accept: 'application/vnd.github.v3+json',
+			Authorization: `token ${token}`,
+			'User-Agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
 		},
 	})
 

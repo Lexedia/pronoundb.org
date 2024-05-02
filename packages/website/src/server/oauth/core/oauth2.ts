@@ -118,10 +118,10 @@ export async function callback ({ url, params, cookies, site }: APIContext, oaut
 	const res = await fetch(oauth.tokenUrl, {
 		method: 'POST',
 		headers: {
-			accept: 'application/json',
-			'content-type': 'application/x-www-form-urlencoded',
-			'user-agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
-			authorization: `Basic ${Buffer.from(`${oauth.clientId}:${oauth.clientSecret}`).toString('base64')}`,
+			Accept: 'application/json',
+			'Content-Type': 'application/x-www-form-urlencoded',
+			'User-Agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
+			Authorization: `Basic ${Buffer.from(`${oauth.clientId}:${oauth.clientSecret}`).toString('base64')}`,
 		},
 		body: encode(parameters),
 	})

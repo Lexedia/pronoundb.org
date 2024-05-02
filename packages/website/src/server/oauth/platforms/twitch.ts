@@ -40,8 +40,8 @@ export const scopes = []
 export async function getSelf (token: string): Promise<ExternalAccount | FlashMessage | null> {
 	const res = await fetch('https://api.twitch.tv/helix/users', {
 		headers: {
-			authorization: `Bearer ${token}`,
-			'user-agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
+			Authorization: `Bearer ${token}`,
+			'User-Agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
 			'client-id': clientId,
 		},
 	})

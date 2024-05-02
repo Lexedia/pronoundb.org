@@ -39,9 +39,9 @@ export const scopes = [ 'XboxLive.signin' ]
 
 export async function getSelf (token: string): Promise<ExternalAccount | FlashMessage | null> {
 	const headers = {
-		accept: 'application/json',
-		'content-type': 'application/json',
-		'user-agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
+		Accept: 'application/json',
+		'Content-Type': 'application/json',
+		'User-Agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
 	}
 
 	// Begin Xbox Live Auth
@@ -122,9 +122,9 @@ export async function getSelf (token: string): Promise<ExternalAccount | FlashMe
 	// User data wooo
 	const profileRes = await fetch('https://api.minecraftservices.com/minecraft/profile', {
 		headers: {
-			accept: 'application/json',
-			authorization: `Bearer ${minecraftToken.access_token}`,
-			'user-agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
+			Accept: 'application/json',
+			Authorization: `Bearer ${minecraftToken.access_token}`,
+			'User-Agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
 		},
 	})
 

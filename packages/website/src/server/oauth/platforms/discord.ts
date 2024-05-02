@@ -50,8 +50,8 @@ function formatName (globalName: string, username: string, discriminator?: strin
 export async function getSelf (token: string): Promise<ExternalAccount | FlashMessage | null> {
 	const res = await fetch('https://discord.com/api/v10/users/@me', {
 		headers: {
-			authorization: `Bearer ${token}`,
-			'user-agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
+			Authorization: `Bearer ${token}`,
+			'User-Agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
 		},
 	})
 

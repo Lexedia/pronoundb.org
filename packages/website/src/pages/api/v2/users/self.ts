@@ -72,7 +72,7 @@ export async function GET (ctx: APIContext) {
 	return new Response(body, {
 		headers: {
 			...getCorsHeaders(ctx.request),
-			'content-type': 'application/json',
+			'Content-Type': 'application/json',
 		},
 	})
 }

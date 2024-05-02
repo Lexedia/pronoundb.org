@@ -44,7 +44,7 @@ export async function GET (ctx: APIContext) {
 					'Access-Control-Allow-Origin': '*',
 					'Access-Control-Allow-Headers': 'X-PronounDB-Source',
 					'Access-Control-Max-Age': '7200',
-					'content-type': 'application/json',
+					'Content-Type': 'application/json',
 				},
 			}
 		)
@@ -62,7 +62,7 @@ export async function GET (ctx: APIContext) {
 					'Access-Control-Allow-Origin': '*',
 					'Access-Control-Allow-Headers': 'X-PronounDB-Source',
 					'Access-Control-Max-Age': '7200',
-					'content-type': 'application/json',
+					'Content-Type': 'application/json',
 				},
 			}
 		)
@@ -80,7 +80,7 @@ export async function GET (ctx: APIContext) {
 			'Access-Control-Allow-Origin': '*',
 			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
 			'Access-Control-Max-Age': '7200',
-			'content-type': 'application/json',
+			'Content-Type': 'application/json',
 		},
 	})
 }

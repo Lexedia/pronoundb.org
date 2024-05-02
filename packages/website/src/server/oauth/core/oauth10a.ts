@@ -114,8 +114,8 @@ export async function authenticatedFetch (url: string | URL, init: Authenticated
 			...init,
 			headers: {
 				...init.headers || {},
-				authorization: `OAuth ${authorization}`,
-				'content-type': 'application/x-www-form-urlencoded',
+				Authorization: `OAuth ${authorization}`,
+				'Content-Type': 'application/x-www-form-urlencoded',
 			},
 			body: init.body ? encode(init.body) : null,
 		}),
@@ -132,7 +132,7 @@ export async function authorize (ctx: APIContext, oauth: OAuth1Params) {
 	const { nonce, response } = await authenticatedFetch(oauth.requestUrl, {
 		method: 'POST',
 		token: { clientId: oauth.clientId, clientSecret: oauth.clientSecret },
-		headers: { 'user-agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)' },
+		headers: { 'User-Agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)' },
 		body: { oauth_callback: callbackUrl.href },
 	})
 
@@ -175,7 +175,7 @@ export async function callback ({ url, params, cookies }: APIContext, oauth: OAu
 	pending.delete(fullToken)
 	const { response } = await authenticatedFetch(oauth.tokenUrl, {
 		method: 'POST',
-		headers: { 'user-agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)' },
+		headers: { 'User-Agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)' },
 		body: { oauth_verifier: verifier },
 		token: {
 			clientId: oauth.clientId,

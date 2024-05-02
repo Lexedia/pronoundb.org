@@ -41,8 +41,8 @@ export const scopes = [ 'users.read', 'tweet.read' ]
 export async function getSelf (token: string): Promise<ExternalAccount | FlashMessage | null> {
 	const res = await fetch('https://api.twitter.com/2/users/me', {
 		headers: {
-			authorization: `Bearer ${token}`,
-			'user-agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
+			Authorization: `Bearer ${token}`,
+			'User-Agent': 'PronounDB Authentication Agent/2.0 (+https://pronoundb.org)',
 		},
 	})
 

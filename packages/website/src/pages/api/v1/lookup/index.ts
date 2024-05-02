@@ -53,7 +53,7 @@ export async function GET (ctx: APIContext) {
 				error: 'Bad request',
 				message: '`platform` and `id` query parameters are required.',
 			}),
-			{ status: 400, headers: { 'content-type': 'application/json' } }
+			{ status: 400, headers: { 'Content-Type': 'application/json' } }
 		)
 	}
 
@@ -64,7 +64,7 @@ export async function GET (ctx: APIContext) {
 				error: 'Bad request',
 				message: '`platform` is not a valid platform.',
 			}),
-			{ status: 400, headers: { 'content-type': 'application/json' } }
+			{ status: 400, headers: { 'Content-Type': 'application/json' } }
 		)
 	}
 
