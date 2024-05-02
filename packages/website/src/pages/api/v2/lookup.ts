@@ -38,6 +38,16 @@ import {
 	LookupRequestsCounter,
 } from '@server/metrics.js'
 
+export function collectMetrics (platform: string, queried: number, hit: number) {
+	const method = queried === 1 ? 'single' : 'bulk'
+	LookupRequestsCounter.inc({ platform: platform, method: method })
+	LookupIdsCounter.inc({ platform: platform }, queried)
+	LookupHitCounter.inc({ platform: platform }, hit)
+	if (method === 'bulk') {
+		LookupBulkSizeHistogram.observe({ platform: platform }, queried)
+	}
+}
+
 export async function GET (ctx: APIContext) {
 	ApiCallVersionCounter.inc({ version: 2 })
 
@@ -107,6 +117,20 @@ export async function GET (ctx: APIContext) {
 	}
 
 	const usersFound = await lookupPronouns(platform, Array.from(ids))
+	collectMetrics(platform, idsCount, usersFound.length)
+
+	if (usersFound.length === 0) {
+		return new Response('{}', {
+			headers: {
+				'Cache-Control': 'public, max-age=30',
+				'Access-Control-Allow-Methods': 'GET',
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+				'Access-Control-Max-Age': '7200',
+				'Content-Type': 'application/json',
+			},
+		})
+	}
 
 	const res = {} as any
 	for (let i = 0; i < usersFound.length; i++) {
@@ -117,18 +141,11 @@ export async function GET (ctx: APIContext) {
 		}
 	}
 
-	// Collect metrics
-	const method = idsCount === 1 ? 'single' : 'bulk'
-	LookupRequestsCounter.inc({ platform: platform, method: method })
-	LookupIdsCounter.inc({ platform: platform }, idsCount)
-	LookupHitCounter.inc({ platform: platform }, usersFound.length)
-	if (method === 'bulk') {
-		LookupBulkSizeHistogram.observe({ platform: platform }, idsCount)
-	}
-
+	const allMatched = idsCount === usersFound.length
 	const body = JSON.stringify(res)
 	return new Response(body, {
 		headers: {
+			'Cache-Control': allMatched ? 'public, max-age=300' : 'public, max-age=30',
 			'Access-Control-Allow-Methods': 'GET',
 			'Access-Control-Allow-Origin': '*',
 			'Access-Control-Allow-Headers': 'X-PronounDB-Source',

@@ -29,8 +29,9 @@
 import type { APIContext } from 'astro'
 import { transformSetsToIdentifier } from '@pronoundb/pronouns/legacy'
 
-import { LookupRequestsCounter, LookupIdsCounter, LookupHitCounter, ApiCallVersionCounter } from '@server/metrics.js'
+import { ApiCallVersionCounter } from '@server/metrics.js'
 import { lookupPronouns } from '@server/database/users.js'
+import { collectMetrics } from '../../v2/lookup.js'
 
 const providers = [
 	'discord',
@@ -69,17 +70,25 @@ export async function GET (ctx: APIContext) {
 	}
 
 	const users = await lookupPronouns(platform, [ id ])
-	const user = users[0]
+	collectMetrics(platform, 1, users.length)
 
-	// Collect metrics
-	LookupRequestsCounter.inc({ platform: platform, method: 'single' })
-	LookupIdsCounter.inc({ platform: platform })
-	if (user) LookupHitCounter.inc({ platform: platform })
+	if (users.length === 0) {
+		return new Response('{"pronouns":"unspecified"}', {
+			headers: {
+				'Cache-Control': 'public, max-age=30',
+				'Access-Control-Allow-Methods': 'GET',
+				'Access-Control-Allow-Origin': '*',
+				'Access-Control-Allow-Headers': 'X-PronounDB-Source',
+				'Access-Control-Max-Age': '7200',
+				'Content-Type': 'application/json',
+			},
+		})
+	}
 
-	const body = JSON.stringify({ pronouns: transformSetsToIdentifier(user?.pronouns.en) })
+	const body = JSON.stringify({ pronouns: transformSetsToIdentifier(users[0]?.pronouns.en) })
 	return new Response(body, {
 		headers: {
-			Vary: 'Origin',
+			'Cache-Control': 'public, max-age=300',
 			'Access-Control-Allow-Methods': 'GET',
 			'Access-Control-Allow-Origin': '*',
 			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
@@ -93,7 +102,6 @@ export function OPTIONS () {
 	return new Response(null, {
 		status: 204,
 		headers: {
-			Vary: 'Origin',
 			'Access-Control-Allow-Methods': 'GET',
 			'Access-Control-Allow-Origin': '*',
 			'Access-Control-Allow-Headers': 'X-PronounDB-Source',

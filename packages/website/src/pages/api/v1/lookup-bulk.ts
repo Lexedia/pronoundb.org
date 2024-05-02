@@ -29,8 +29,9 @@
 import type { APIContext } from 'astro'
 import { transformSetsToIdentifier } from '@pronoundb/pronouns/legacy'
 
-import { LookupRequestsCounter, LookupIdsCounter, LookupHitCounter, LookupBulkSizeHistogram, ApiCallVersionCounter } from '@server/metrics.js'
+import { ApiCallVersionCounter } from '@server/metrics.js'
 import { lookupPronouns } from '@server/database/users.js'
+import { collectMetrics } from '../v2/lookup.js'
 
 const providers = [
 	'discord',
@@ -94,19 +95,13 @@ export async function GET (ctx: APIContext) {
 		res[id] = 'unspecified'
 	}
 
-	// Collect metrics
-	const method = idsCount === 1 ? 'single' : 'bulk'
-	LookupRequestsCounter.inc({ platform: platform, method: method })
-	LookupIdsCounter.inc({ platform: platform }, idsCount)
-	LookupHitCounter.inc({ platform: platform }, idsHitCount)
-	if (method === 'bulk') {
-		LookupBulkSizeHistogram.observe({ platform: platform }, idsCount)
-	}
+	collectMetrics(platform, idsCount, idsHitCount)
 
+	const allMatched = idsCount === users.length
 	const body = JSON.stringify(res)
 	return new Response(body, {
 		headers: {
-			Vary: 'Origin',
+			'Cache-Control': allMatched ? 'public, max-age=300' : 'public, max-age=30',
 			'Access-Control-Allow-Methods': 'GET',
 			'Access-Control-Allow-Origin': '*',
 			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
@@ -120,7 +115,6 @@ export function OPTIONS () {
 	return new Response(null, {
 		status: 204,
 		headers: {
-			Vary: 'Origin',
 			'Access-Control-Allow-Methods': 'GET',
 			'Access-Control-Allow-Origin': '*',
 			'Access-Control-Allow-Headers': 'X-PronounDB-Source',
