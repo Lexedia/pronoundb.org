@@ -46,10 +46,14 @@ for (const mdl in rawModules) {
 }
 
 export async function getModule (loc?: string): Promise<ExtensionModule | null> {
+	// ref: https://bugzilla.mozilla.org/show_bug.cgi?id=1711570
+	const extension = typeof browser === 'undefined' ? chrome : browser
+
 	if (!loc) {
 		loc = location.href
-		if (chrome.tabs) {
-			const [ tab ] = await chrome.tabs.query({ active: true, currentWindow: true })
+		if (extension.tabs) {
+			const [ tab ] = await extension.tabs.query({ active: true, currentWindow: true })
+			// eslint-disable-next-line require-atomic-updates
 			loc = tab.url!
 		}
 	}

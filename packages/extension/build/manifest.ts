@@ -31,7 +31,7 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 
 type Manifest = Omit<chrome.runtime.ManifestV3, 'background'> // Firefox background page compat
-	& { background?: chrome.runtime.ManifestV2['background'] | chrome.runtime.ManifestV3['background'] }
+	& Pick<chrome.runtime.ManifestV2 | chrome.runtime.ManifestV3, 'background'>
 
 let missingTarget = !process.env.PDB_BROWSER_TARGET
 process.env.PDB_BROWSER_TARGET = process.env.PDB_BROWSER_TARGET || 'chrome'
@@ -60,7 +60,7 @@ export default function manifest (): Plugin {
 				manifest_version: 3,
 				name: isDev ? 'PronounDB (dev)' : 'PronounDB',
 				description: 'A browser extension that lets people know how to refer to each other on various places of the Internet', // todo: localize?
-				version: process.env.PDB_EXT_VERSION!,
+				version: process.env.PDB_EXT_VERSION,
 
 				permissions: [ 'activeTab', 'storage' ],
 				// todo: localhost api indev
@@ -91,22 +91,41 @@ export default function manifest (): Plugin {
 					},
 				],
 
-				web_accessible_resources: [
-					{
-						resources: [
-							chunks.extension.name,
-							...chunks.extension.imports,
-							...Object.keys(chunks)
-								.filter((k) => k.startsWith('styles/') && k.endsWith('.css'))
-								.map((k) => chunks[k].name)
-						],
-						matches: [ '*://*/*' ]
-					}
-				],
+				// Chrome requires resources to be WAR when using imports in content scripts
+				// Firefox doesn't, and doesn't allow MV3 extensions to load WAR in the popup page
+				// https://twitter.com/cyyynthia_/status/1546237262014324736
+				web_accessible_resources: process.env.PDB_BROWSER_TARGET !== 'firefox'
+					? [
+						{
+							resources: [
+								chunks.extension.name,
+								...chunks.extension.imports,
+								...Object.keys(chunks)
+									.filter((k) => k.startsWith('styles/') && k.endsWith('.css'))
+									.map((k) => chunks[k].name),
+							],
+							matches: [ '*://*/*' ],
+						},
+					]
+					: void 0,
 
 				browser_specific_settings: process.env.PDB_BROWSER_TARGET === 'firefox'
 					? { gecko: { id: 'firefox-addon@pronoundb.org' } }
 					: void 0,
+			}
+
+			// Manifest v2 compatibility for Firefox
+			// todo: remove once MV3 reaches GA in FF
+			if (process.env.PDB_BROWSER_TARGET === 'firefox') {
+				manifestData.manifest_version = 2
+				manifestData.browser_action = manifestData.action
+				manifestData.permissions.push(...manifestData.host_permissions)
+				// manifestData.optional_permissions = manifestData.optional_host_permissions
+
+				delete manifestData.action
+				delete manifestData.host_permissions
+				delete manifestData.optional_host_permissions
+				manifestData.content_security_policy = manifestData.content_security_policy.extension_pages
 			}
 
 			this.emitFile({
