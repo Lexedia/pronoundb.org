@@ -87,6 +87,7 @@ export default function manifest (): Plugin {
 							'https://*.modrinth.com/*',
 							'https://*.twitch.tv/*',
 							'https://*.twitter.com/*',
+							'https://*.x.com/*',
 						],
 					},
 				],
