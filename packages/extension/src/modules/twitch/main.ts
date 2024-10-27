@@ -68,6 +68,7 @@ async function injectChat (element: HTMLElement) {
 		if (!username) return
 		if (!(username in usersCache)) {
 			userId = await fetchReactProp(element, [ 'return', 'key' ]).then((s: string) => s.split('-')[0])
+			console.log(userId)
 			if (!userId) return
 
 			usersCache[username] = userId
@@ -319,7 +320,7 @@ function handleMutation (nodes: MutationRecord[]) {
 				if (settings.chat) {
 					const displayName = added.querySelector<HTMLElement>('.chat-author__display-name')
 					// Chat message
-					if ((added.className.includes('chat-line__') || added.classList.contains('user-notice-line')) && displayName) {
+					if ((added.firstElementChild?.className?.includes('chat-line__') || added.classList.contains('user-notice-line')) && displayName) {
 						injectChat(displayName)
 						continue
 					}
