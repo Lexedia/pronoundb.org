@@ -12,13 +12,13 @@
 		"lint": "eslint --ext ts src"
 	},
 	"dependencies": {
-		"@types/chrome": "^0.0.267"
+		"@types/chrome": "^0.0.279"
 	},
 	"devDependencies": {
-		"@typescript-eslint/eslint-plugin": "^7.8.0",
-		"@typescript-eslint/parser": "^7.8.0",
-		"eslint": "^8.57.0",
-		"typescript": "^5.4.5"
+		"@typescript-eslint/eslint-plugin": "^7.18.0",
+		"@typescript-eslint/parser": "^7.18.0",
+		"eslint": "8.57.0",
+		"typescript": "^5.6.3"
 	},
 	"exports": {
 		"./sets": {

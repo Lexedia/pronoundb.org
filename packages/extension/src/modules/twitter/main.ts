@@ -94,7 +94,7 @@ async function injectProfileHeader () {
 			memoizedUsername = await fetchReactProp(node, [ { $find: 'user', $in: [ 'return', 'memoizedProps' ] }, 'user', 'screen_name' ])
 			if (memoizedUsername === username) break
 
-			await new Promise((r) => setTimeout(r, 10));
+			await new Promise((r) => setTimeout(r, 10))
 		}
 
 		// We're about to fetch the wrong data
@@ -148,8 +148,8 @@ async function injectTweet (tweet: HTMLElement) {
 	if (username && username in usernameToIdCache) {
 		id = usernameToIdCache[username]
 	} else {
-		const directId = await fetchReactProp(tweet, [ { $find: 'tweet', $in: [ 'return', 'memoizedProps' ], }, 'tweet', 'user', 'id_str' ])
-		const retweetId = await fetchReactProp(tweet, [ { $find: 'tweet', $in: [ 'return', 'memoizedProps' ], }, 'tweet', 'retweeted_status', 'user', 'id_str' ])
+		const directId = await fetchReactProp(tweet, [ { $find: 'tweet', $in: [ 'return', 'memoizedProps' ] }, 'tweet', 'user', 'id_str' ])
+		const retweetId = await fetchReactProp(tweet, [ { $find: 'tweet', $in: [ 'return', 'memoizedProps' ] }, 'tweet', 'retweeted_status', 'user', 'id_str' ])
 
 		// Tweets can be removed and injected again, and in this case we cannot trust the data from `directId` and `retweetId`
 		if (!tweet.isConnected) return
@@ -232,7 +232,7 @@ async function injectDmHeader (element: HTMLElement) {
 			placeholderRoot = document.querySelector('.draftjs-styles_0 .public-DraftEditorPlaceholder-root')
 			if (placeholderRoot) break
 
-			await new Promise((r) => setTimeout(r, 50));
+			await new Promise((r) => setTimeout(r, 50))
 		}
 		if (!placeholderRoot) return
 
@@ -253,8 +253,8 @@ async function injectDmHeader (element: HTMLElement) {
 						lineHeight: '12px',
 						height: '28px',
 						display: 'flex',
-						alignItems: 'center'
-					})
+						alignItems: 'center',
+					}),
 				},
 				h(
 					'span',
@@ -265,8 +265,8 @@ async function injectDmHeader (element: HTMLElement) {
 							borderRadius: '4px',
 							marginTop: '2px',
 							backgroundColor: textareaStyledContainer.backgroundColor,
-							color: placeholderStyledContainer.color
-						})
+							color: placeholderStyledContainer.color,
+						}),
 					},
 					formattedPronouns
 				)
@@ -325,7 +325,7 @@ async function injectDmUserInfo (element: HTMLElement) {
 	if (avatar) avatar.dataset.pdbHandled = 'true'
 
 	const userInfo = element.querySelector('div[data-testid="UserDescription"] + div')
- 	const template = userInfo?.firstElementChild
+	const template = userInfo?.firstElementChild
 	const separator = template?.nextElementSibling
 	if (!userInfo || !template || !separator) return
 
