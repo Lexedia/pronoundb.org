@@ -31,7 +31,7 @@
 //
 // This patches does the following:
 // - Disables static assets handling (handled by nginx)
-// - Turns all dynamic imports static
+// - Turns most significant dynamic imports static
 
 import { readFileSync, writeFileSync, readdirSync } from 'fs'
 
@@ -41,8 +41,7 @@ const CHUNKS = new URL('./chunks/', ASTRO_SERVER)
 
 // Process entrypoint
 let entry = readFileSync(ENTRY_FILE, 'utf8')
-entry = entry.replace('staticHandler(req, res, () => appHandler(req, res))', 'appHandler(req, res)')
-entry = entry.replace(/const (_page\d+) = \(\) => import\(('[^']+')\);/g, 'import * as _$1 from $2; const $1 = () => _$1;')
+entry = entry.replace(/const (_page\d+) = \(\) => import\(('[^']+')\);/g, 'import * as _$1 from $2; const $1 = () => _$1; // [Cynthia\'s patch]')
 writeFileSync(ENTRY_FILE, entry)
 
 // Process chunks
@@ -51,7 +50,6 @@ for (const chunk of readdirSync(CHUNKS)) {
 
 	const path = new URL(chunk, CHUNKS)
 	let code = readFileSync(path, 'utf8');
-	code = code.replace(/const page = \(\) => import\(('[^']+')\);\n\nexport \{ page };/g, 'import * as _page from $1; export const page = () => _page')
-	code = code.replace(/const page = \(\) => import\(('[^']+')\)\.then\(\w => \w\.(\w+)\);\n\nexport \{ page };/g, 'import { $2 as _page } from $1; export const page = () => _page')
+	code = code.replace('staticHandler(req, res, () => appHandler(req, res))', 'appHandler(req, res)')
 	writeFileSync(path, code)
 }

@@ -35,7 +35,7 @@ import { XMLParser } from 'fast-xml-parser'
 
 const DECORATION_SVG_ROOT = import.meta.env.DEV
 	? new URL('../../assets/decorations/', import.meta.url)
-	: new URL('../../../src/assets/decorations/', import.meta.url)
+	: new URL('../../../../src/assets/decorations/', import.meta.url)
 
 async function loadSvg (resource: string) {
 	const svg = await readFile(new URL(resource, DECORATION_SVG_ROOT))
