@@ -29,6 +29,8 @@
 import '@types/chrome'
 
 declare global {
+	const browser: any
+
 	const cloneInto: (object: any, ctx: any, opts?: any) => void
 
 	interface Window {

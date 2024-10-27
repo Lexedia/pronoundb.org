@@ -39,3 +39,19 @@
 aside[role="complementary"] [data-testid="UserCell"] .pronoundb-decoration-wrapper {
 	top: -6px;
 }
+
+div[data-testid="conversation"] div:has(> div[style]:empty + div):has([data-testid="DM_Conversation_Avatar"]) {
+	position: static;
+}
+
+.pdb-dm-header div:has(> div[style]:empty + div):has([data-testid="DM_Conversation_Avatar"]) {
+	position: static;
+}
+
+.pdb-dm-header div:has(> div > div[style]:empty + div):has([data-testid="DM_Conversation_Avatar"]) {
+	margin-right: 12px;
+}
+
+.pdb-dm-user-info .pronoundb-decoration-wrapper {
+	top: -10px;
+}

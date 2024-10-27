@@ -49,8 +49,7 @@ export function fetchPropUnchecked (target: HTMLElement, propPath: QueryElement[
 			}
 
 			for (const p of prop.$in) {
-				// eslint-disable-next-line eqeqeq -- Intentional check for undefined & null
-				if (p in el && el[p] != null) queue.push(el[p])
+				if (p in el && el[p] !== null && typeof el[p] === 'object') queue.push(el[p])
 			}
 		}
 	}

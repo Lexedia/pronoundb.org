@@ -88,6 +88,18 @@ async function injectProfileHeader () {
 		id = usernameToIdCache[username]
 	} else {
 		const node = header.parentElement!
+		// Check if we are getting *real* data, it somehow sometimes lags behind for some reason??
+		let memoizedUsername = ''
+		for (let i = 0; i < 100; i++) {
+			memoizedUsername = await fetchReactProp(node, [ { $find: 'user', $in: [ 'return', 'memoizedProps' ] }, 'user', 'screen_name' ])
+			if (memoizedUsername === username) break
+
+			await new Promise((r) => setTimeout(r, 10));
+		}
+
+		// We're about to fetch the wrong data
+		if (memoizedUsername !== username) return
+
 		id = await fetchReactProp(node, [ { $find: 'user', $in: [ 'return', 'memoizedProps' ] }, 'user', 'id_str' ])
 		if (username && id) usernameToIdCache[username] = id
 	}
@@ -98,9 +110,12 @@ async function injectProfileHeader () {
 	if (!pronouns) return
 
 	if (pronouns.sets.en) {
+		const formattedPronouns = formatPronouns(pronouns.sets.en)
+		if (!formattedPronouns) return
+
 		const prevPronouns = header.querySelector<HTMLElement>('[data-pronoundb]')
 		if (prevPronouns) {
-			prevPronouns.replaceChild(document.createTextNode(formatPronouns(pronouns.sets.en)), prevPronouns.childNodes[1])
+			prevPronouns.replaceChild(document.createTextNode(formattedPronouns), prevPronouns.childNodes[1])
 			return
 		}
 
@@ -110,7 +125,7 @@ async function injectProfileHeader () {
 				'span',
 				{ class: template.className, style: template.getAttribute('style'), 'data-pronoundb': 'true' },
 				topics({ class: template.children[0]?.getAttribute('class') ?? '' }),
-				formatPronouns(pronouns.sets.en)
+				formattedPronouns
 			)
 		)
 	}
@@ -133,14 +148,8 @@ async function injectTweet (tweet: HTMLElement) {
 	if (username && username in usernameToIdCache) {
 		id = usernameToIdCache[username]
 	} else {
-		const directId = await fetchReactProp(tweet, [ {
-			$find: 'tweet',
-			$in: [ 'return', 'memoizedProps' ],
-		}, 'tweet', 'user', 'id_str' ])
-		const retweetId = await fetchReactProp(tweet, [ {
-			$find: 'tweet',
-			$in: [ 'return', 'memoizedProps' ],
-		}, 'tweet', 'retweeted_status', 'user', 'id_str' ])
+		const directId = await fetchReactProp(tweet, [ { $find: 'tweet', $in: [ 'return', 'memoizedProps' ], }, 'tweet', 'user', 'id_str' ])
+		const retweetId = await fetchReactProp(tweet, [ { $find: 'tweet', $in: [ 'return', 'memoizedProps' ], }, 'tweet', 'retweeted_status', 'user', 'id_str' ])
 
 		// Tweets can be removed and injected again, and in this case we cannot trust the data from `directId` and `retweetId`
 		if (!tweet.isConnected) return
@@ -155,6 +164,9 @@ async function injectTweet (tweet: HTMLElement) {
 	if (!pronouns) return
 
 	if (pronouns.sets.en) {
+		const formattedPronouns = formatPronouns(pronouns.sets.en)
+		if (!formattedPronouns) return
+
 		const dateContainer = tweet.querySelector(tweet.dataset.testid === 'tweet' ? 'a time' : 'time')?.parentElement
 		const parentContainer = dateContainer?.parentElement
 		if (!dateContainer || !parentContainer) return
@@ -167,7 +179,7 @@ async function injectTweet (tweet: HTMLElement) {
 				{ class: `${containerClass} pronoundb-container`, style: dateContainer.getAttribute('style') },
 				h('span', { class: 'pronoundb-void' }, '​'),
 				h('span', { class: 'pronoundb-separator' }, '·'),
-				h('span', { class: 'pronoundb-pronouns' }, formatPronouns(pronouns.sets.en))
+				h('span', { class: 'pronoundb-pronouns' }, formattedPronouns)
 			)
 		)
 	}
@@ -175,6 +187,168 @@ async function injectTweet (tweet: HTMLElement) {
 	// Now, handle the decoration
 	if (imgWrapper && imgWrapper.tagName === 'A' && pronouns.decoration) {
 		decorateAvatar(imgWrapper, pronouns.decoration, 'tweet')
+	}
+}
+
+async function injectDmHeader (element: HTMLElement) {
+	element.classList.add('pdb-dm-header')
+
+	// Group DM
+	if (element.querySelectorAll('[data-testid^="UserAvatar-Container"]').length > 1) return
+
+	// Mark avatar as handled
+	const avatar = element.querySelector<HTMLElement>('a[data-testid="DM_Conversation_Avatar"] div[role="presentation"]')
+	if (avatar) avatar.dataset.pdbHandled = 'true'
+
+	// Remove previous pronouns shown (probably outdated)
+	const previousPronouns1 = element.querySelector('.pronoundb-pronouns-container')
+	if (previousPronouns1) previousPronouns1.remove()
+
+	const header = element.querySelector<HTMLElement>('h2')
+	const headerContainer = header?.parentElement
+	if (!header || !headerContainer) return
+
+	for (let i = 0; i < 20; i++) { // Wait full view to be loaded
+		if (header.firstElementChild?.tagName === 'DIV') break
+		await new Promise((r) => setTimeout(r, 25))
+	}
+
+	const id = await fetchReactProp(header, [ 'return', { $find: 'participants', $in: [ 'child', 'pendingProps' ] }, 'participants', '0', 'id_str' ])
+	if (!id) return
+
+	// Remove again, in case there's a race condition
+	const previousPronouns2 = element.querySelector('.pronoundb-pronouns-container')
+	if (previousPronouns2) previousPronouns2.remove()
+
+	const pronouns = await fetchPronouns('twitter', id)
+	if (!pronouns) return
+
+	if (pronouns.sets.en) {
+		const formattedPronouns = formatPronouns(pronouns.sets.en)
+		if (!formattedPronouns) return
+
+		let placeholderRoot = null
+		for (let i = 0; i < 20; i++) { // Wait for placeholder to be loaded
+			placeholderRoot = document.querySelector('.draftjs-styles_0 .public-DraftEditorPlaceholder-root')
+			if (placeholderRoot) break
+
+			await new Promise((r) => setTimeout(r, 50));
+		}
+		if (!placeholderRoot) return
+
+		const placeholderStyledContainer = getComputedStyle(placeholderRoot)
+		const textareaStyledContainer = getComputedStyle(document.querySelector('aside[role="complementary"] > div + div')!)
+		headerContainer.style.display = 'flex'
+		headerContainer.style.flexDirection = 'row'
+		headerContainer.style.alignItems = 'center'
+		headerContainer.style.gap = '8px'
+		headerContainer.appendChild(
+			h(
+				'div',
+				{
+					class: `${header.className} pronoundb-pronouns-container`,
+					style: css({
+						fontSize: '11px',
+						fontWeight: '500',
+						lineHeight: '12px',
+						height: '28px',
+						display: 'flex',
+						alignItems: 'center'
+					})
+				},
+				h(
+					'span',
+					{
+						class: 'pronoundb-pronouns',
+						style: css({
+							padding: '2px 4px',
+							borderRadius: '4px',
+							marginTop: '2px',
+							backgroundColor: textareaStyledContainer.backgroundColor,
+							color: placeholderStyledContainer.color
+						})
+					},
+					formattedPronouns
+				)
+			)
+		)
+	}
+
+	if (avatar && pronouns.decoration) {
+		decorateAvatar(avatar, pronouns.decoration, 'popout')
+	}
+}
+
+async function injectDmDrawerHeader (element: HTMLElement) {
+	const container = element.parentElement
+	const username = element.innerText.slice(1)
+	const template = element.firstElementChild
+
+	if (!container || !template || !username) return
+
+	let id: string
+	if (username && username in usernameToIdCache) {
+		id = usernameToIdCache[username]
+	} else {
+		id = await fetchReactProp(container, [ { $find: 'participants', $in: [ 'child', 'memoizedProps' ] }, 'participants', '0', 'id_str' ])
+		if (username && id) usernameToIdCache[username] = id
+	}
+
+	if (!id) return
+
+	const pronouns = await fetchPronouns('twitter', id)
+	if (!pronouns) return
+
+	if (pronouns.sets.en) {
+		const formattedPronouns = formatPronouns(pronouns.sets.en)
+		if (!formattedPronouns) return
+
+		const separatorElement = template.cloneNode(true) as HTMLElement
+		const pronounsElement = template.cloneNode(true) as HTMLElement
+
+		separatorElement.style.marginLeft = '4px'
+		pronounsElement.style.marginLeft = '4px'
+
+		separatorElement.innerText = '·'
+		pronounsElement.innerText = formattedPronouns
+
+		element.appendChild(separatorElement)
+		element.appendChild(pronounsElement)
+	}
+}
+
+async function injectDmUserInfo (element: HTMLElement) {
+	element.classList.add('pdb-dm-user-info')
+
+	// Mark avatar as handled
+	const avatar = element.querySelector<HTMLElement>('[data-testid^="UserAvatar-Container"] div[aria-hidden][role="presentation"]')
+	if (avatar) avatar.dataset.pdbHandled = 'true'
+
+	const userInfo = element.querySelector('div[data-testid="UserDescription"] + div')
+ 	const template = userInfo?.firstElementChild
+	const separator = template?.nextElementSibling
+	if (!userInfo || !template || !separator) return
+
+	const id = await fetchReactProp(element, [ { $find: 'userId', $in: [ 'child', 'memoizedProps', 'props', 'sibling' ] }, 'userId' ])
+	if (!id) return
+
+	const pronouns = await fetchPronouns('twitter', id)
+	if (!pronouns) return
+
+	if (pronouns.sets.en) {
+		const formattedPronouns = formatPronouns(pronouns.sets.en)
+		if (!formattedPronouns) return
+
+		const separatorEl = separator.cloneNode(true) as HTMLElement
+		const pronounsEl = template.cloneNode(true) as HTMLElement
+		pronounsEl.innerText = formattedPronouns
+
+		userInfo.appendChild(separatorEl)
+		userInfo.appendChild(pronounsEl)
+	}
+
+	if (avatar && pronouns.decoration) {
+		decorateAvatar(avatar, pronouns.decoration, 'popout')
 	}
 }
 
@@ -187,13 +361,16 @@ async function injectProfilePopOut (popout: HTMLElement) {
 	const template = userInfo?.querySelector<HTMLElement>('a[tabindex="-1"] [dir=ltr]')
 	if (!template || !userInfo) return
 
-	const id = await fetchReactProp(popout, [ 'memoizedProps', 'children', '2', 'props', 'children', 'props', 'userId' ])
+	const id = await fetchReactProp(popout, [ 'memoizedProps', { $find: 'userId', $in: [ 'children', '0', '1', '2', 'props' ] }, 'userId' ])
 	if (!id) return
 
 	const pronouns = await fetchPronouns('twitter', id)
 	if (!pronouns) return
 
 	if (pronouns.sets.en) {
+		const formattedPronouns = formatPronouns(pronouns.sets.en)
+		if (!formattedPronouns) return
+
 		const childClass = template.children[0].className
 		const parentClass = template.className
 		const parentStyle = template.getAttribute('style')
@@ -224,7 +401,7 @@ async function injectProfilePopOut (popout: HTMLElement) {
 						marginRight: '4px',
 					}),
 				}),
-				formatPronouns(pronouns.sets.en)
+				formattedPronouns
 			)
 		)
 
@@ -242,8 +419,31 @@ async function injectAvatarDecoration (img: HTMLElement) {
 	const wrapper = img.parentElement?.parentElement?.parentElement?.parentElement?.parentElement
 	if (!wrapper || wrapper.dataset.pdbHandled === 'true') return
 
+	const contextTestId = wrapper.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.dataset?.testid
+	if (contextTestId === 'MutlipleParticipantAvatarContainer') return // Group DM
+	if (contextTestId === 'notification') return // Notification small avatar
+
+	const usernameContextTestId = wrapper.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.dataset?.testid
+	if (usernameContextTestId === 'User-Name') return // Small affiliated business
+
 	let id: string
-	if (wrapper.tagName === 'DIV') {
+	if (wrapper.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.parentElement?.dataset?.testid === 'DM_Conversation_Avatar') {
+		// DM -- special handling cuz IDs are a bit of a pain
+		let pov: string
+		if (self in usernameToIdCache) {
+			pov = usernameToIdCache[self]
+		} else {
+			pov = await fetchReactProp(wrapper, [ { $find: 'perspective', $in: [ 'return', 'memoizedProps' ] }, 'perspective' ])
+			if (!pov) return
+
+			usernameToIdCache[self] = pov
+		}
+
+		const convId = await fetchReactProp(wrapper, [ { $find: 'conversation', $in: [ 'return', 'memoizedProps' ] }, 'conversation', 'conversation_id' ])
+		if (!convId) return
+
+		id = convId.replace(pov, '').replace('-', '')
+	} else if (wrapper.tagName === 'DIV') {
 		let isSelf = false
 		let queryPath
 		let queryId
@@ -251,7 +451,7 @@ async function injectAvatarDecoration (img: HTMLElement) {
 		if (document.querySelector('header')?.contains(wrapper)) {
 			isSelf = true
 			queryPath = [ 'return', 'memoizedProps', 'currentUser' ]
-			queryId = 'id_str'
+			queryId = [ 'id_str' ]
 		}
 
 		const layers = document.querySelector('#layers')
@@ -259,10 +459,10 @@ async function injectAvatarDecoration (img: HTMLElement) {
 			if (layers?.querySelector('[data-testid="tweetTextarea_0_label"]') && !wrapper.ariaHidden) {
 				isSelf = true
 				queryPath = [ 'return', 'memoizedProps', 'currentUser' ]
-				queryId = 'id_str'
+				queryId = [ 'id_str' ]
 			} else {
 				queryPath = [ 'return', 'memoizedProps' ]
-				queryId = 'userId'
+				queryId = [ 'userId' ]
 			}
 		}
 
@@ -270,8 +470,8 @@ async function injectAvatarDecoration (img: HTMLElement) {
 		if (isSelf && self in usernameToIdCache) {
 			id = usernameToIdCache[self]
 		} else {
-			id = await fetchReactProp(wrapper, [ { $find: queryId, $in: queryPath }, queryId ])
-			if (id && self) usernameToIdCache[self] = id
+			id = await fetchReactProp(wrapper, [ { $find: queryId[0], $in: queryPath }, ...queryId ])
+			if (id) usernameToIdCache[self] = id
 		}
 	} else {
 		// Classic flow with cache possibility
@@ -280,10 +480,7 @@ async function injectAvatarDecoration (img: HTMLElement) {
 			id = usernameToIdCache[username]
 		} else {
 			id = await fetchReactProp(wrapper, [ { $find: 'userId', $in: [ 'return', 'memoizedProps' ] }, 'userId' ])
-			if (!id) id = await fetchReactProp(wrapper, [ {
-				$find: 'id_str',
-				$in: [ 'return', 'memoizedProps', 'viewerUser' ],
-			}, 'id_str' ])
+			if (!id) id = await fetchReactProp(wrapper, [ { $find: 'id_str', $in: [ 'return', 'memoizedProps', 'viewerUser' ] }, 'id_str' ])
 			if (username && id) usernameToIdCache[username] = id
 		}
 	}
@@ -313,7 +510,6 @@ function handleMutation (nodes: MutationRecord[]) {
 	for (const { addedNodes } of nodes) {
 		for (const added of addedNodes) {
 			if (added instanceof HTMLElement && added.tagName !== 'SCRIPT') {
-				// console.log(added)
 				if (added.parentElement?.parentElement?.tagName === 'MAIN') {
 					handleLayoutRepaint()
 					continue
@@ -322,6 +518,7 @@ function handleMutation (nodes: MutationRecord[]) {
 				if (
 					added.children[0]?.getAttribute('data-testid') === 'UserDescription'
 					|| added.children[0]?.children[0]?.querySelector('[data-testid="UserProfileHeader_Items"]')
+					|| added.querySelector(':scope > div > div[data-testid="UserName"]')
 				) {
 					injectProfileHeader()
 					continue
@@ -338,6 +535,33 @@ function handleMutation (nodes: MutationRecord[]) {
 						injectTweet(quoteTweet)
 					}
 
+					continue
+				}
+
+				// DM Header
+				if (added.querySelector('a[href^="/messages"][href$="/info"]')) {
+					injectDmHeader(added)
+					continue
+				}
+
+				if (
+					(added.tagName === 'A' && added.getAttribute('href')?.startsWith('/messages/') && added.getAttribute('href')?.endsWith('/info'))
+					|| (added.querySelector(':is(:scope, :scope > div + div > div) > h2[role="heading"]') && added.parentElement?.parentElement?.querySelector('a[href^="/messages"][href$="/info"]'))
+				) {
+					const element = document.querySelector<HTMLElement>('section[role="region"] div[data-viewportview="true"] > div:has(a[href^="/messages"][href$="/info"])')
+					if (element) injectDmHeader(element)
+					continue
+				}
+
+				if (added.firstElementChild?.getAttribute('data-testid') === 'DMDrawerHeader') {
+					const username = added.querySelector<HTMLElement>('h2 + div')
+					if (username) injectDmDrawerHeader(username)
+					continue
+				}
+
+				// DM recipient Info
+				if (added.dataset.testid === 'cellInnerDiv' && added.querySelector('[data-testid="UserDescription"]')) {
+					injectDmUserInfo(added)
 					continue
 				}
 
@@ -366,6 +590,8 @@ function handleMutation (nodes: MutationRecord[]) {
 					if (added.children[0]?.getAttribute('data-testid') === 'twc-cc-mask') {
 						const img = added.querySelector<HTMLElement>('img')
 						if (img) injectAvatarDecoration(img)
+
+						// noinspection UnnecessaryContinueJS
 						continue
 					}
 				}
