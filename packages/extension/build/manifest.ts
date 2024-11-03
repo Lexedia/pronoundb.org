@@ -69,7 +69,7 @@ export default function manifest (): Plugin {
 				action: { default_popup: 'popup.html' },
 				content_security_policy: {
 					// todo: localhost api indev
-					extension_pages: 'default-src \'self\'; connect-src https://pronoundb.org;',
+					// extension_pages: 'default-src \'self\'; connect-src https://pronoundb.org;',
 				},
 
 				// See https://bugzilla.mozilla.org/show_bug.cgi?id=1573659
@@ -86,10 +86,10 @@ export default function manifest (): Plugin {
 							'https://*.github.com/*',
 							'https://*.modrinth.com/*',
 							'https://*.osu.ppy.sh/*',
+							'https://*.sr.ht/*',
 							'https://*.twitch.tv/*',
 							'https://*.twitter.com/*',
 							'https://*.x.com/*',
-							'https://*.sr.ht/*',
 						],
 					},
 				],
